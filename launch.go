@@ -3,7 +3,9 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"strconv"
+	"strings"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -14,7 +16,7 @@ var db *sql.DB
 var red_client *redis.Client
 var stmt_insert *sql.Stmt
 var stmt_getbyauthor *sql.Stmt
-
+var new_article_key string = "article:"
 var sql_insert string = "insert into article values(null,?,?,?,?)"
 var sql_getbyauthor string = "select * from article where author=?"
 
@@ -22,18 +24,23 @@ func GetTags(raw string) []string {
 	relist := make([]string, 0)
 	return append(relist, "sfsf")
 }
-func AddNewArticle(anthor string, title string, subtitle string, content string) error {
-	res, err := stmt_insert.Exec(anthor, title, subtitle, content)
+func GetNow() string {
+	return strconv.Itoa(int(time.Now().Unix()))
+}
+func AddNewArticle(author string, title string, subtitle string, content string) error {
+	res, err := stmt_insert.Exec(author, title, subtitle, content)
+	if err != nil {
+		log.Println("mysql 错误")
+	}
 	id, err := res.LastInsertId()
-
+	if err != nil {
+		log.Println("mysql 错误")
+	}
+	raw := strings.Join(GetTags(content[0:100]), "_")
+	_, err = red_client.HMSet(new_article_key+strconv.Itoa(int(id)), "author", author, "tags", raw, "createdtime", GetNow())
 	return err
 }
 
-func Init() error {
-	stmt_insert, _ = db.Prepare(sql_insert)
-	stmt_getbyauthor, _ = db.Prepare(sql_getbyauthor)
-	return nil
-}
 func main() {
 	red_client = redis.New()
 	red_client.Connect("127.0.0.1", 6379)
@@ -48,16 +55,13 @@ func main() {
 	db.SetMaxOpenConns(20)
 	stmt_insert, _ = db.Prepare(sql_insert)
 	stmt_getbyauthor, _ = db.Prepare(sql_getbyauthor)
-	timestamp := strconv.Itoa(int(time.Now().Unix()))
-	fmt.Println(timestamp)
 
-	res, err := stmt_insert.Exec("lix", "title3", "subtitle1", "kongneirong")
+	res, err := stmt_insert.Exec("lix", "title5", "subtitle1", "kongneirong")
 
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-	//	defer stmt_insert.Close()
-	//	defer stmt_getbyauthor.Close()
+	log.Println(GetNow())
 	id, err := res.LastInsertId()
 	fmt.Println(id)
 }
