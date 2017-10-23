@@ -117,7 +117,7 @@ var new_article_key string = "article:"
 var sql_insert string = "insert into article values(null,?,?,?,?)"
 var sql_getbyauthor string = "select * from article where author=?"
 var sql_updatearticle string = "update article set content=? where id=?"
-var sql_getarticle string = "select content from article where id=?"
+var sql_getarticle string = "select author,title,subtitle,content from article where id=?"
 
 func GetTags(raw string) []string {
 	relist := make([]string, 0)
