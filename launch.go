@@ -30,6 +30,12 @@ type UserInfo struct {
 	UserName string `json:"username"`
 	Phone    string `json:"phone"`
 }
+type ArticleInfo struct {
+	Author   string `json:"author"`
+	Title    string `json:"title"`
+	Subtitle string `json:"subtitle"`
+	Content  string `json:"content"`
+}
 
 func GetMd5(raw string) string {
 	return fmt.Sprintf("%x", md5.Sum([]byte(raw)))
@@ -62,6 +68,9 @@ func NewRes(errno int, errmsg string, data interface{}) Res {
 }
 func NewUserInfo(rid int, email string, nickname string, phone string, username string) UserInfo {
 	return UserInfo{rid, email, nickname, phone, username}
+}
+func NewAritcleInfo(author string, title string, subtitle string, content string) ArticleInfo {
+	return ArticleInfo{author, title, subtitle, content}
 }
 func SendEmail(to string, msg string) error {
 	c := new(http.Client)
@@ -97,12 +106,18 @@ func GetConfirmUrl(email string, password string) string {
 const register_key = "awec12*"
 const mail_body string = `<html><body><a src="%s"></body></html>`
 const prefix_confirm string = "http://127.0.0.1:8080/register_confirm"
+const auth_key string = "auth123&"
+const article_key string = "article&#$12"
 
 var stmt_insert *sql.Stmt
+var stmt_update *sql.Stmt
 var stmt_getbyauthor *sql.Stmt
+var stmt_getarticle *sql.Stmt
 var new_article_key string = "article:"
 var sql_insert string = "insert into article values(null,?,?,?,?)"
 var sql_getbyauthor string = "select * from article where author=?"
+var sql_updatearticle string = "update article set content=? where id=?"
+var sql_getarticle string = "select content from article where id=?"
 
 func GetTags(raw string) []string {
 	relist := make([]string, 0)
@@ -110,6 +125,16 @@ func GetTags(raw string) []string {
 }
 func GetNow() string {
 	return strconv.Itoa(int(time.Now().Unix()))
+}
+
+//ruc校验
+func Auth1(ri string, rtime string, rtoken string) bool {
+	return GetMd5(auth_key+ri+rtime) == rtoken
+}
+
+//蚊帐更新校验
+func Auth2(ri string, articleid int, aricletoken string) bool {
+	return GetMd5(article_key+ri+strconv.Itoa(articleid)) == aricletoken
 }
 func AddNewArticle(author string, title string, subtitle string, content string) error {
 	res, err := stmt_insert.Exec(author, title, subtitle, content)
@@ -131,12 +156,35 @@ func AddNewArticle(author string, title string, subtitle string, content string)
 	_, err = red_client.HMSet(new_article_key+strconv.Itoa(int(id)), "author", author, "tags", raw, "createdtime", GetNow())
 	return err
 }
+func UpdateArticle(articleid int, content string) error {
+	res, err := stmt_update.Exec(content, articleid)
+	if err != nil {
+		log.Println("mysql 错误")
+	}
+	return err
+}
+func GetArticleContent(articleid int) (string, string, string, string, error) {
+	res, err := stmt_getarticle.QueryRow(articleid)
+	if err != nil {
+		return "", "", "", "", err
+	}
+	var author string
+	var title string
+	var subtitle string
+	var content string
+	res.Scan(&author, &title, &subtitle, &content)
+
+	return author, title, subtitle, content, nil
+}
 func main() {
 	app := iris.New()
 	//连接mysql数据库
 	db, err := sql.Open("mysql", "dev:dalizi1992@tcp(127.0.0.1:3306)/jack")
 	db.SetMaxOpenConns(20)
 	defer db.Close()
+	stmt_insert, _ = db.Prepare(sql_insert)
+	stmt_update, _ = db.Prepare(sql_updatearticle)
+	stmt_getarticle, _ = db.Prepare(sql_getarticle)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -277,6 +325,81 @@ func main() {
 		}
 		ctx.JSON(NewRes(0, "注册成功", ""))
 
+	})
+	app.Post("/article/addnew", func(ctx context.Context) {
+		rtime := ctx.PostValue("r_time")
+		rtoken := ctx.PostValue("r_token")
+		ri := ctx.GetCookie("I")
+		author := ctx.PostValue("r_author")
+		title := ctx.PostValue("r_title")
+		subtitle := ctx.PostValue("r_subtitle")
+		content := ctx.PostValue("r_content")
+		if rid == "" || rtime == "" || rtoken == "" || author == "" || title == "" || content == "" {
+			ctx.JSON(NewRes(1001, "参数错误", ""))
+			return
+		}
+		if (strconv.Atoi(GetNow()) - strconv.Atoi(rtime)) > 86400 {
+			ctx.JSON(NewRes(800, "token过期", ""))
+			return
+		}
+		if !Auth1(ri, rtime, rtoken) {
+			ctx.JSON(NewRes(1002, "token错误", ""))
+			return
+		}
+		err := AddNewArticle(author, title, subtitle, content)
+		if err != nil {
+			ctx.JSON(NewRes(1003, "此标题已经存在", ""))
+			return
+		}
+		ctx.JSON(NewRes(0, "成功提交", ""))
+	})
+	app.Post("/article/{id:int}", func(ctx context.Context) {
+		articleid, err := ctx.Params().GetInt("id")
+		rtime := ctx.FormValue("r_time")
+		rtoken := ctx.FormValue("r_token")
+		rid := ctx.GetCookie("I")
+		if err != nil || articleid <= 0 {
+			ctx.JSON(NewRes(1001, "不存在该页面"))
+			return
+		}
+		author, title, subtitle, content, err := GetArticleContent(articleid)
+		if err != nil {
+			ctx.JSON(NewRes(1002, "内部错误", ""))
+			return
+		}
+		ctx.JSON(NewRes(0, "", NewAritcleInfo(author, title, subtitle, content)))
+		return
+	})
+	app.Post("/article/update", func(ctx context.Context) {
+		rtime := ctx.PostValue("r_time")
+		rtoken := ctx.PostValue("r_token")
+		ri := ctx.GetCookie("I")
+		rarticleid, _ := ctx.PostValueInt("r_articleid")
+		rarticletoken := ctx.PostValue("r_articletoken")
+		//		author := ctx.PostValue("r_author")
+		//		title := ctx.PostValue("r_title")
+		//		subtitle := ctx.PostValue("r_subtitle")
+		content := ctx.PostValue("r_content")
+
+		if ri == "" || rtime == "" || rtoken == "" || content == "" || raticleid == "" {
+			ctx.JSON(NewRes(1001, "参数错误", ""))
+			return
+		}
+		if !Auth1(ri, rtime, rtoken) {
+			ctx.JSON(NewRes(1002, "token错误", ""))
+			return
+		}
+		if !Auth2(ri, raticleid) {
+			ctx.JSON(NewRes(1002, "token错误", ""))
+			return
+		}
+		err := UpdateArticle(rarticleid, content)
+		if err != nil {
+			ctx.JSON(NewRes(1003, "更新失败", ""))
+			return
+		}
+		ctx.JSON(NewRes(0, "更新成功", ""))
+		return
 	})
 	app.Run(iris.Addr(":8080"))
 }
