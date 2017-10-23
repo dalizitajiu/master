@@ -36,7 +36,14 @@ func AddNewArticle(author string, title string, subtitle string, content string)
 	if err != nil {
 		log.Println("mysql 错误")
 	}
-	raw := strings.Join(GetTags(content[0:100]), "_")
+	var tlen int
+	if len(content) < 100 {
+		tlen = len(content) - 1
+	} else {
+		tlen = 100
+	}
+	log.Println(tlen)
+	raw := strings.Join(GetTags(content[0:tlen]), "_")
 	_, err = red_client.HMSet(new_article_key+strconv.Itoa(int(id)), "author", author, "tags", raw, "createdtime", GetNow())
 	return err
 }
@@ -56,12 +63,6 @@ func main() {
 	stmt_insert, _ = db.Prepare(sql_insert)
 	stmt_getbyauthor, _ = db.Prepare(sql_getbyauthor)
 
-	res, err := stmt_insert.Exec("lix", "title5", "subtitle1", "kongneirong")
-
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-	log.Println(GetNow())
-	id, err := res.LastInsertId()
-	fmt.Println(id)
+	AddNewArticle("jack", "newtitle6", "subtitle2", "dfssfsfsfdf")
+	//	fmt.Println(id)
 }
