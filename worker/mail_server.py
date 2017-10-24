@@ -6,7 +6,7 @@ from email.mime.text import MIMEText
 app = Flask(__name__)
 _user = "********@qq.com"
 _pwd  = "bpfoypnbzzqabdbd"
-_to   = "lixiaomeng19920528@outlook.com"
+
 def actSend(to,msg):
 	global _user,_pwd
 	msg=MIMEText(msg)
