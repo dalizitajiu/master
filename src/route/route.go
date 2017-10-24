@@ -29,6 +29,7 @@ type ArticleInfo struct {
 	Content  string `json:"content"`
 }
 
+//type route int
 var register_key string = "awec12*"
 
 func NewRes(errno int, errmsg string, data interface{}) Res {
@@ -41,9 +42,15 @@ func NewUserInfo(rid int, email string, nickname string, phone string, username 
 func NewAritcleInfo(author string, title string, subtitle string, content string) ArticleInfo {
 	return ArticleInfo{author, title, subtitle, content}
 }
+func Hello(ctx context.Context) {
+	ctx.Writef("dsfsd")
+}
 func UserLogin(ctx context.Context) {
+	log.Println("userinfo")
+
 	mail := ctx.PostValueTrim("email")
 	pwd := ctx.PostValueTrim("pwd")
+	log.Println(mail, pwd)
 	if mail == "" || pwd == "" {
 		ctx.JSON(NewRes(1001, "参数错误", ""))
 		return
@@ -66,6 +73,7 @@ func UserLogin(ctx context.Context) {
 	ctx.JSON(NewRes(0, "", NewUserInfo(rid, email, username, phone, nickname)))
 	return
 }
+
 func UserRegister(ctx context.Context) {
 	mail := ctx.PostValue("email")
 	passwd := ctx.PostValue("pwd")
