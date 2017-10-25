@@ -27,14 +27,14 @@ var sql_userinfo string = "select rid,nickname,username,email,phone from userinf
 
 func init() {
 	log.Println("inti in cache.go")
-	red_client := redis.New()
+	red_client = redis.New()
 	err := red_client.Connect("127.0.0.1", 6379)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 	//	red_client.Auth()
 	//	defer red_client.Quit()
-	db, err := sql.Open("mysql", "dev:dalizi1992@tcp(127.0.0.1:3306)/jack")
+	db, err = sql.Open("mysql", "dev:dalizi1992@tcp(127.0.0.1:3306)/jack")
 	db.SetMaxOpenConns(20)
 	defer db.Close()
 	stmt_insert, _ = db.Prepare(sql_insert)
