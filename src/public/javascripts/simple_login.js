@@ -1,5 +1,15 @@
 Vue.component('simple-login', {
-    template: `<div><input v-bind:value="email"></input><input v-bind:value="pwd" type="password"></input></div>`,
+    template: `<div>
+                    <form action="/user/login" method="post" enctype="application/x-www-form-urlencoded">
+                    请输入邮箱:<br>
+                    <input v-bind:value="email" name="email"></input>
+                    <br>
+                    请输入密码:<br>
+                    <input name="pwd" type="password"></input>
+                    <br>
+                    <input type="submit"></input>
+                    </form>
+                </div>`,
     data: function() {
         return {
             email: "",

@@ -44,10 +44,7 @@ func NewAritcleInfo(author string, title string, subtitle string, content string
 func Hello(ctx context.Context) {
 	ctx.Writef("dsfsd")
 }
-func RenderArticle(ctx context.Context) {
-	ctx.ViewData("message", "lixiomeng"+ctx.Params().Get("id"))
-	ctx.View("hello.html")
-}
+
 func UserLogin(ctx context.Context) {
 	log.Println("userinfo")
 
