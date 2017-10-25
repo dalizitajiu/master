@@ -135,6 +135,7 @@ func GetArticleContent(articleid int) (string, string, string, string, error) {
 	return cache.DbGetArticleContent(articleid)
 }
 func GetPwdRid(mail string) ([]string, error) {
+	log.Println("GetPwdRid")
 	return cache.CacheGetPwdRid(red_userinfo+GetMd5(mail), "pwd", "rid")
 }
 func SetPwdRid(mail string, pwd string, rid int) error {

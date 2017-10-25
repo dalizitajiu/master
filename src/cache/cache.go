@@ -23,7 +23,7 @@ var sql_insert string = "insert into article values(null,?,?,?,?)"
 var sql_getbyauthor string = "select * from article where author=?"
 var sql_updatearticle string = "update article set content=? where id=?"
 var sql_getarticle string = "select author,title,subtitle,content from article where id=?"
-var sql_userinfo string = "select rid,nickname,username,email,phone from userinfo where rid=?"
+var sql_userinfo string = "select rid,nickname,email,phone,username from userinfo where rid=?"
 
 func init() {
 	log.Println("inti in cache.go")
@@ -36,7 +36,7 @@ func init() {
 	//	defer red_client.Quit()
 	db, err = sql.Open("mysql", "dev:dalizi1992@tcp(127.0.0.1:3306)/jack")
 	db.SetMaxOpenConns(20)
-	defer db.Close()
+	//	defer db.Close()
 	stmt_insert, _ = db.Prepare(sql_insert)
 	stmt_update, _ = db.Prepare(sql_updatearticle)
 	stmt_getarticle, _ = db.Prepare(sql_getarticle)
@@ -50,7 +50,8 @@ func CacheGenSimpleArticleInfo(key string, fld1 string, val string, fld2 string,
 	return err
 }
 func CacheGetPwdRid(key string, fld1 string, fld2 string) ([]string, error) {
-	return red_client.MGet(key, fld1, fld2)
+	log.Println(key)
+	return red_client.HMGet(key, fld1, fld2)
 }
 func CacheSetPwdRid(key string, fld1 string, val1 string, fld2 string, val2 string) error {
 	_, err := red_client.HMSet(key, fld1, val1, fld2, val2)

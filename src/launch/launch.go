@@ -23,9 +23,11 @@ func main() {
 
 	app.Use(customLogger)
 	log.Println("Start Service!")
-	app.RegisterView(iris.HTML("./public/views", ".html"))
-	app.StaticWeb("/assert/javascript", "./public/javascripts")
-	app.StaticWeb("/assert/style", "./public/styles")
+	app.RegisterView(iris.HTML("../public/views", ".html"))
+	app.StaticWeb("/assert/javascript", "../public/javascripts")
+	app.StaticWeb("/assert/style", "../public/styles")
+
+	app.Get("/viewarticle/{id:int}", route.RenderArticle)
 	app.Get("/hello", route.Hello)
 	app.Post("/user/login", route.UserLogin)
 	app.Post("/user/register", route.UserRegister)

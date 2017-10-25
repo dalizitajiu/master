@@ -1,0 +1,17 @@
+<html>
+<head>
+    <title>Hello Page</title>
+	<script src="/assert/javascript/vue.js"></script>
+    <script src="/assert/javascript/jquery-3.2.1.js"></script>
+    <<script src="/assert/javascript/simple_login.js"></script>
+</head>
+<body>
+    <h1>{{.message}}</h1>
+    <simple-login id="box_login"></simple-login>
+    <script type="text/javascript">
+        var box_login=(new Vue({
+        el:"#box_login"
+    })).$children[0];
+    </script>
+</body>
+</html>

@@ -29,7 +29,6 @@ type ArticleInfo struct {
 	Content  string `json:"content"`
 }
 
-//type route int
 var register_key string = "awec12*"
 
 func NewRes(errno int, errmsg string, data interface{}) Res {
@@ -45,6 +44,10 @@ func NewAritcleInfo(author string, title string, subtitle string, content string
 func Hello(ctx context.Context) {
 	ctx.Writef("dsfsd")
 }
+func RenderArticle(ctx context.Context) {
+	ctx.ViewData("message", "lixiomeng"+ctx.Params().Get("id"))
+	ctx.View("hello.html")
+}
 func UserLogin(ctx context.Context) {
 	log.Println("userinfo")
 
@@ -56,6 +59,7 @@ func UserLogin(ctx context.Context) {
 		return
 	}
 	reslist, err := lib.GetPwdRid(mail)
+	log.Println(reslist)
 	//	reslist, err := cache.()
 	if err != nil {
 		ctx.JSON(NewRes(1002, "内部错误", ""))
@@ -63,6 +67,7 @@ func UserLogin(ctx context.Context) {
 	}
 
 	rsrid, rpwd := reslist[1], reslist[0]
+	log.Println(rsrid, rpwd)
 	if rpwd != pwd {
 		ctx.JSON(NewRes(1003, "账号或者密码错误", ""))
 		return
