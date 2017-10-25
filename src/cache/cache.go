@@ -92,7 +92,7 @@ func DbGetUserinfoByRid(rrid int) (int, string, string, string, string) {
 	var username string
 	var email string
 	var phone string
-	err := rows.Scan(&rid, &username, &nickname, &email, &phone)
+	err := rows.Scan(&rid, &username, &email, &phone, &nickname)
 	if err != nil {
 		return 0, "", "", "", ""
 	}
