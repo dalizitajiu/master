@@ -70,7 +70,7 @@ func UserLogin(ctx context.Context) {
 		return
 	}
 	rrid, _ := strconv.Atoi(rsrid)
-	rid, nickname, username, email, phone := lib.GetUserinfoByRid(rrid)
+	rid, nickname, email, phone, username := lib.GetUserinfoByRid(rrid)
 	ctx.Header("Set-Cookie", lib.Serialize("fuck", "shit", map[string]string{"maxAge": "60", "path": "/", "domin": "127.0.0.1"}))
 	ctx.JSON(NewRes(0, "", NewUserInfo(rid, email, username, phone, nickname)))
 	return

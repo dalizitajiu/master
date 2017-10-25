@@ -1,11 +1,11 @@
 Vue.component('simple-login', {
     template: `<div>
-                    <form action="/user/login" method="post" enctype="application/x-www-form-urlencoded">
+                    <form ref="loginform" action="/user/login" method="post" enctype="application/x-www-form-urlencoded" v-on:submit.prevent="checkForm">
                     请输入邮箱:<br>
-                    <input v-bind:value="email" name="email"></input>
+                    <input v-model.trim="email" name="email"></input>
                     <br>
                     请输入密码:<br>
-                    <input name="pwd" type="password"></input>
+                    <input v-model.trim="pwd" name="pwd" type="password"></input>
                     <br>
                     <input type="submit"></input>
                     </form>
@@ -28,6 +28,16 @@ Vue.component('simple-login', {
         },
         getPasswd: function() {
             return this.pwd;
+        },
+        checkForm:function(){
+            console.log("dagoushi")
+            if(this.email.length<1 || this.pwd.length<1){
+                console.log("shit")
+                return false;
+            }else{
+                this.$refs.loginform.submit();
+                return true;
+            }
         }
     }
 })
