@@ -11,3 +11,6 @@ func RenderLogin(ctx context.Context) {
 	ctx.ViewData("message", "lixiomeng"+ctx.Params().Get("id"))
 	ctx.View("login.html")
 }
+func RenderSideBar(ctx context.Context) {
+	ctx.View("viewarticle.html")
+}

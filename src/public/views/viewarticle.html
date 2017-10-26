@@ -1,0 +1,16 @@
+<html>
+<head>
+  <script src="/assert/javascript/vue.js"></script>
+  <script src="/assert/javascript/axios.min.js"></script>
+  <script src="/assert/javascript/articlelist.js"></script>
+</head>
+<body>
+
+    <article-list id="todaylist"></article-list>
+
+  <script type="text/javascript">
+    var todaylist=new Vue({el:"#todaylist"}))
+    todaylist.getSimpleData();
+  </script>
+</body>
+</html>

@@ -28,6 +28,11 @@ type ArticleInfo struct {
 	Subtitle string `json:"subtitle"`
 	Content  string `json:"content"`
 }
+type AbstractInfo struct {
+	Author     string `json:"author"`
+	Title      string `json:"title"`
+	CreateTime string `json:"createtime"`
+}
 
 var register_key string = "awec12*"
 
@@ -218,5 +223,10 @@ func GetArticle(ctx context.Context) {
 		return
 	}
 	ctx.JSON(NewRes(0, "", NewAritcleInfo(author, title, subtitle, content)))
+	return
+}
+func GetArticleList(ctx context.Context) {
+	re := lib.GetSimpleArticleInfo()
+	ctx.JSON(NewRes(0, "", re))
 	return
 }
