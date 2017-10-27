@@ -23,10 +23,11 @@ type UserInfo struct {
 	Phone    string `json:"phone"`
 }
 type ArticleInfo struct {
-	Author   string `json:"author"`
-	Title    string `json:"title"`
-	Subtitle string `json:"subtitle"`
-	Content  string `json:"content"`
+	Author     string `json:"author"`
+	Title      string `json:"title"`
+	Subtitle   string `json:"subtitle"`
+	Content    string `json:"content"`
+	CreateTime string `json:"createtime"`
 }
 type AbstractInfo struct {
 	Author     string `json:"author"`
@@ -43,13 +44,16 @@ func NewUserInfo(rid int, email string, nickname string, phone string, username 
 	return UserInfo{rid, email, nickname, phone, username}
 }
 
-func NewAritcleInfo(author string, title string, subtitle string, content string) ArticleInfo {
-	return ArticleInfo{author, title, subtitle, content}
+func NewAritcleInfo(author string, title string, subtitle string, content string, createtime string) ArticleInfo {
+	return ArticleInfo{author, title, subtitle, content, createtime}
 }
+
+// 测试用
 func Hello(ctx context.Context) {
 	ctx.Writef("dsfsd")
 }
 
+// 登录
 func UserLogin(ctx context.Context) {
 	log.Println("userinfo")
 
@@ -81,6 +85,7 @@ func UserLogin(ctx context.Context) {
 	return
 }
 
+// 用户注册
 func UserRegister(ctx context.Context) {
 	mail := ctx.PostValue("email")
 	passwd := ctx.PostValue("pwd")
@@ -96,6 +101,8 @@ func UserRegister(ctx context.Context) {
 	go lib.SendEmail(mail, lib.GetConfirmUrl(mail, passwd))
 	ctx.JSON(NewRes(0, "邮件已经发送", ""))
 }
+
+// 注册邮件confirm
 func RegisterConfirm(ctx context.Context) {
 	rt := ctx.FormValue("t")
 	rmail := ctx.FormValue("encoded_mail")
@@ -152,6 +159,8 @@ func RegisterConfirm(ctx context.Context) {
 	}
 	ctx.JSON(NewRes(0, "注册成功", ""))
 }
+
+// 增加新文章
 func ArticleAddNew(ctx context.Context) {
 	rtime := ctx.PostValue("r_time")
 	rtoken := ctx.PostValue("r_token")
@@ -181,6 +190,8 @@ func ArticleAddNew(ctx context.Context) {
 	}
 	ctx.JSON(NewRes(0, "成功提交", ""))
 }
+
+// 文章更新
 func AriticleUpdate(ctx context.Context) {
 	rtime := ctx.PostValue("r_time")
 	rtoken := ctx.PostValue("r_token")
@@ -211,20 +222,23 @@ func AriticleUpdate(ctx context.Context) {
 	return
 }
 
+// 获取文章
 func GetArticle(ctx context.Context) {
 	articleid, err := ctx.Params().GetInt("id")
 	if err != nil || articleid <= 0 {
 		ctx.JSON(NewRes(1001, "不存在该页面", ""))
 		return
 	}
-	author, title, subtitle, content, err := lib.GetArticleContent(articleid)
+	author, title, subtitle, content, createtime, err := lib.GetArticleContent(articleid)
 	if err != nil {
 		ctx.JSON(NewRes(1002, "内部错误", ""))
 		return
 	}
-	ctx.JSON(NewRes(0, "", NewAritcleInfo(author, title, subtitle, content)))
+	ctx.JSON(NewRes(0, "", NewAritcleInfo(author, title, subtitle, content, createtime)))
 	return
 }
+
+// 获取简单的文章列表
 func GetArticleList(ctx context.Context) {
 	re := lib.GetSimpleArticleInfo()
 	ctx.JSON(NewRes(0, "", re))

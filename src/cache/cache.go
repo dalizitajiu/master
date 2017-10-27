@@ -25,7 +25,7 @@ var sql_getbyauthor string = "select * from article where author=?"
 var sql_updatearticle string = "update article set content=? where id=?"
 var sql_getarticle string = "select author,title,subtitle,content from article where id=?"
 var sql_userinfo string = "select rid,nickname,email,phone,username from userinfo where rid=?"
-var sql_simple_article_info = "select author,title,createtime from article order by createtime desc"
+var sql_simple_article_info = "select id,author,title,createtime from article order by createtime desc"
 
 func init() {
 	log.Println("inti in cache.go")
@@ -42,6 +42,7 @@ func init() {
 	stmt_getarticle, _ = db.Prepare(sql_getarticle)
 	stmt_userinfo, _ = db.Prepare(sql_userinfo)
 	stmt_simple_article_info, _ = db.Prepare(sql_simple_article_info)
+
 	if err != nil {
 		panic(err.Error())
 	}
@@ -75,29 +76,32 @@ func DbUpdateArticle(articleid int, content string) error {
 	}
 	return err
 }
-func DbGetArticleContent(articleid int) (string, string, string, string, error) {
+func DbGetArticleContent(articleid int) (string, string, string, string, string, error) {
 	res := stmt_getarticle.QueryRow(articleid)
 
 	var author string
 	var title string
 	var subtitle string
 	var content string
-	res.Scan(&author, &title, &subtitle, &content)
+	var createtime string
+	res.Scan(&author, &title, &subtitle, &content, &createtime)
 
-	return author, title, subtitle, content, nil
+	return author, title, subtitle, content, createtime, nil
 }
 func DbGetSimpleArticleInfo() []map[string]string {
 	res, _ := stmt_simple_article_info.Query()
 	re := make([]map[string]string, 0)
+	var id string
 	var author string
 	var title string
 	var createtime string
 	for res.Next() {
-		res.Scan(&author, &title, &createtime)
+		res.Scan(&id, &author, &title, &createtime)
 		temp := make(map[string]string)
 		temp["author"] = author
 		temp["title"] = title
 		temp["createtime"] = createtime
+		temp["id"] = id
 		re = append(re, temp)
 	}
 	return re

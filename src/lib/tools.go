@@ -134,7 +134,7 @@ func AddNewArticle(author string, title string, subtitle string, content string)
 func UpdateArticle(articleid int, content string) error {
 	return cache.DbUpdateArticle(articleid, content)
 }
-func GetArticleContent(articleid int) (string, string, string, string, error) {
+func GetArticleContent(articleid int) (string, string, string, string, string, error) {
 	return cache.DbGetArticleContent(articleid)
 }
 func GetPwdRid(mail string) ([]string, error) {
