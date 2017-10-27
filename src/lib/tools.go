@@ -100,8 +100,8 @@ func GetNowNano() string {
 }
 
 //Auth1 ruc token校验
-func Auth1(ri string, rtime string, rtoken string) bool {
-	return GetMd5(authKey+ri+rtime) == rtoken
+func Auth1(rid string, rtime string, rtoken string) bool {
+	return GetMd5(authKey+rid+rtime) == rtoken
 }
 
 //Auth2 文章更新token校验
