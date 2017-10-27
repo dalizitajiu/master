@@ -4,64 +4,72 @@ import (
 	"database/sql"
 	"log"
 
-	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/go-sql-driver/mysql" //初始化
 	"github.com/gosexy/redis"
 )
 
 var db *sql.DB
-var red_client *redis.Client
+var redisClient *redis.Client
 
-var userinfo string = "login:"
+var userinfo = "login:"
 
-var stmt_insert *sql.Stmt
-var stmt_update *sql.Stmt
-var stmt_getbyauthor *sql.Stmt
-var stmt_getarticle *sql.Stmt
-var stmt_userinfo *sql.Stmt
-var stmt_simple_article_info *sql.Stmt
+var stmtInsert *sql.Stmt
+var stmtUpdate *sql.Stmt
+var stmtGetByAuthor *sql.Stmt
+var stmtGetArticle *sql.Stmt
+var stmtGetUserInfo *sql.Stmt
+var stmtGetSimpleArticleInfo *sql.Stmt
 
-var sql_insert string = "insert into article values(null,?,?,?,?,?)"
-var sql_getbyauthor string = "select * from article where author=?"
-var sql_updatearticle string = "update article set content=? where id=?"
-var sql_getarticle string = "select author,title,subtitle,content from article where id=?"
-var sql_userinfo string = "select rid,nickname,email,phone,username from userinfo where rid=?"
-var sql_simple_article_info = "select id,author,title,createtime from article order by createtime desc"
+var sqlInsert = "insert into article values(null,?,?,?,?,?)"
+var sqlGetByAuthor = "select * from article where author=?"
+var sqlUpdateArticle = "update article set content=? where id=?"
+var sqlGetArticle = "select author,title,subtitle,content from article where id=?"
+var sqlGetUserInfo = "select rid,nickname,email,phone,username from userinfo where rid=?"
+var sqlGetSimpleArticleInfo = "select id,author,title,createtime from article order by createtime desc"
 
 func init() {
 	log.Println("inti in cache.go")
-	red_client = redis.New()
-	err := red_client.Connect("127.0.0.1", 6379)
+	redisClient = redis.New()
+	err := redisClient.Connect("127.0.0.1", 6379)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	//	red_client.Auth()
+	//	redisClient.Auth()
 	db, err = sql.Open("mysql", "dev:dalizi1992@tcp(127.0.0.1:3306)/jack")
 	db.SetMaxOpenConns(20)
-	stmt_insert, _ = db.Prepare(sql_insert)
-	stmt_update, _ = db.Prepare(sql_updatearticle)
-	stmt_getarticle, _ = db.Prepare(sql_getarticle)
-	stmt_userinfo, _ = db.Prepare(sql_userinfo)
-	stmt_simple_article_info, _ = db.Prepare(sql_simple_article_info)
+	stmtInsert, _ = db.Prepare(sqlInsert)
+	stmtUpdate, _ = db.Prepare(sqlUpdateArticle)
+	stmtGetArticle, _ = db.Prepare(sqlGetArticle)
+	stmtGetUserInfo, _ = db.Prepare(sqlGetUserInfo)
+	stmtGetSimpleArticleInfo, _ = db.Prepare(sqlGetSimpleArticleInfo)
 
 	if err != nil {
 		panic(err.Error())
 	}
 }
-func CacheGenSimpleArticleInfo(key string, fld1 string, val string, fld2 string, val2 string, fld3 string, val3 string) error {
-	_, err := red_client.HMSet(key, fld1, val, fld2, val2, fld3, val3)
+
+//RedSimpleArticleInfo 获取简单的文章信息
+func RedSimpleArticleInfo(key string, fld1 string, val string, fld2 string, val2 string, fld3 string, val3 string) error {
+	_, err := redisClient.HMSet(key, fld1, val, fld2, val2, fld3, val3)
 	return err
 }
-func CacheGetPwdRid(key string, fld1 string, fld2 string) ([]string, error) {
+
+//RedGetPwdRid redis得到密码和rid
+func RedGetPwdRid(key string, fld1 string, fld2 string) ([]string, error) {
 	log.Println(key)
-	return red_client.HMGet(key, fld1, fld2)
+	return redisClient.HMGet(key, fld1, fld2)
 }
-func CacheSetPwdRid(key string, fld1 string, val1 string, fld2 string, val2 string) error {
-	_, err := red_client.HMSet(key, fld1, val1, fld2, val2)
+
+//RedSetPwdRid redis设置密码和rid
+func RedSetPwdRid(key string, fld1 string, val1 string, fld2 string, val2 string) error {
+	_, err := redisClient.HMSet(key, fld1, val1, fld2, val2)
 	return err
 
 }
+
+//DbAddNewArticle mysql增加新纹章
 func DbAddNewArticle(author string, title string, subtitle string, content string, createtime string) (int, error) {
-	res, err := stmt_insert.Exec(author, title, subtitle, content, createtime)
+	res, err := stmtInsert.Exec(author, title, subtitle, content, createtime)
 	if err != nil {
 		log.Println("mysql 错误")
 		return 0, err
@@ -69,15 +77,19 @@ func DbAddNewArticle(author string, title string, subtitle string, content strin
 	id, err := res.LastInsertId()
 	return int(id), err
 }
+
+//DbUpdateArticle mysql更新文章
 func DbUpdateArticle(articleid int, content string) error {
-	_, err := stmt_update.Exec(content, articleid)
+	_, err := stmtUpdate.Exec(content, articleid)
 	if err != nil {
 		log.Println("mysql 错误")
 	}
 	return err
 }
+
+//DbGetArticleContent mysql获取文章内容
 func DbGetArticleContent(articleid int) (string, string, string, string, string, error) {
-	res := stmt_getarticle.QueryRow(articleid)
+	res := stmtGetArticle.QueryRow(articleid)
 
 	var author string
 	var title string
@@ -88,8 +100,10 @@ func DbGetArticleContent(articleid int) (string, string, string, string, string,
 
 	return author, title, subtitle, content, createtime, nil
 }
+
+//DbGetSimpleArticleInfo mysql获取简单的文章信息
 func DbGetSimpleArticleInfo() []map[string]string {
-	res, _ := stmt_simple_article_info.Query()
+	res, _ := stmtGetSimpleArticleInfo.Query()
 	re := make([]map[string]string, 0)
 	var id string
 	var author string
@@ -107,8 +121,10 @@ func DbGetSimpleArticleInfo() []map[string]string {
 	return re
 
 }
+
+//DbGetUserinfoByRid msql通过rid获取用户信息
 func DbGetUserinfoByRid(rrid int) (int, string, string, string, string) {
-	rows := stmt_userinfo.QueryRow(rrid)
+	rows := stmtGetUserInfo.QueryRow(rrid)
 	var rid int
 	var nickname string
 	var username string
@@ -120,10 +136,14 @@ func DbGetUserinfoByRid(rrid int) (int, string, string, string, string) {
 	}
 	return rid, nickname, username, email, phone
 }
-func CacheCheckExistsEmail(key string) (bool, error) {
 
-	return red_client.Exists(key)
+//RedCheckExistsEmail redis检测该邮箱有没有被使用
+func RedCheckExistsEmail(key string) (bool, error) {
+
+	return redisClient.Exists(key)
 }
-func CacheGetNextRid(key string) (int64, error) {
-	return red_client.Incr(key)
+
+//RedGetNextRid redis获取下一个rid
+func RedGetNextRid(key string) (int64, error) {
+	return redisClient.Incr(key)
 }

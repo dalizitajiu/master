@@ -10,11 +10,14 @@ import (
 	"github.com/kataras/iris/context"
 )
 
+//Res 结果
 type Res struct {
 	Errno  int         `json:"errno"`
 	Errmsg string      `json:"errmsg"`
 	Data   interface{} `json:"data"`
 }
+
+//UserInfo 用户信息
 type UserInfo struct {
 	Rid      int    `json:"rid"`
 	Email    string `json:"email"`
@@ -22,6 +25,8 @@ type UserInfo struct {
 	UserName string `json:"username"`
 	Phone    string `json:"phone"`
 }
+
+//ArticleInfo 文章信息
 type ArticleInfo struct {
 	Author     string `json:"author"`
 	Title      string `json:"title"`
@@ -29,31 +34,37 @@ type ArticleInfo struct {
 	Content    string `json:"content"`
 	CreateTime string `json:"createtime"`
 }
+
+//AbstractInfo 摘要信息
 type AbstractInfo struct {
 	Author     string `json:"author"`
 	Title      string `json:"title"`
 	CreateTime string `json:"createtime"`
 }
 
-var register_key string = "awec12*"
+var registerKey = "awec12*"
 
+//NewRes 新回复
 func NewRes(errno int, errmsg string, data interface{}) Res {
 	return Res{errno, errmsg, data}
 }
+
+//NewUserInfo 新的用户信息
 func NewUserInfo(rid int, email string, nickname string, phone string, username string) UserInfo {
 	return UserInfo{rid, email, nickname, phone, username}
 }
 
+//NewAritcleInfo 新的文章信息
 func NewAritcleInfo(author string, title string, subtitle string, content string, createtime string) ArticleInfo {
 	return ArticleInfo{author, title, subtitle, content, createtime}
 }
 
-// 测试用
+//Hello 测试用
 func Hello(ctx context.Context) {
 	ctx.Writef("dsfsd")
 }
 
-// 登录
+//UserLogin 登录
 func UserLogin(ctx context.Context) {
 	log.Println("userinfo")
 
@@ -85,7 +96,7 @@ func UserLogin(ctx context.Context) {
 	return
 }
 
-// 用户注册
+//UserRegister 用户注册
 func UserRegister(ctx context.Context) {
 	mail := ctx.PostValue("email")
 	passwd := ctx.PostValue("pwd")
@@ -98,11 +109,11 @@ func UserRegister(ctx context.Context) {
 		ctx.JSON(NewRes(1002, "该邮箱已经被使用", ""))
 		return
 	}
-	go lib.SendEmail(mail, lib.GetConfirmUrl(mail, passwd))
+	go lib.SendEmail(mail, lib.GetConfirmURL(mail, passwd))
 	ctx.JSON(NewRes(0, "邮件已经发送", ""))
 }
 
-// 注册邮件confirm
+//RegisterConfirm 注册邮件confirm
 func RegisterConfirm(ctx context.Context) {
 	rt := ctx.FormValue("t")
 	rmail := ctx.FormValue("encoded_mail")
@@ -134,9 +145,9 @@ func RegisterConfirm(ctx context.Context) {
 		return
 	}
 	log.Println(rt, mail, pwd, "sdfsfd")
-	if lib.GetMd5(register_key+"|"+rt+"|"+mail+"|"+pwd) != rtoken {
-		log.Println(register_key + "|" + rt + "|" + mail + "|" + pwd)
-		ctx.JSON(NewRes(1003, "token校验失败", lib.GetMd5(register_key+"|"+rt+"|"+strings.Trim(mail, "\"")+"|"+strings.Trim(pwd, "\""))))
+	if lib.GetMd5(registerKey+"|"+rt+"|"+mail+"|"+pwd) != rtoken {
+		log.Println(registerKey + "|" + rt + "|" + mail + "|" + pwd)
+		ctx.JSON(NewRes(1003, "token校验失败", lib.GetMd5(registerKey+"|"+rt+"|"+strings.Trim(mail, "\"")+"|"+strings.Trim(pwd, "\""))))
 		return
 	}
 	b1 := lib.CheckExistsEmail(mail)
@@ -160,7 +171,7 @@ func RegisterConfirm(ctx context.Context) {
 	ctx.JSON(NewRes(0, "注册成功", ""))
 }
 
-// 增加新文章
+//ArticleAddNew 增加新文章
 func ArticleAddNew(ctx context.Context) {
 	rtime := ctx.PostValue("r_time")
 	rtoken := ctx.PostValue("r_token")
@@ -191,7 +202,7 @@ func ArticleAddNew(ctx context.Context) {
 	ctx.JSON(NewRes(0, "成功提交", ""))
 }
 
-// 文章更新
+//AriticleUpdate 文章更新
 func AriticleUpdate(ctx context.Context) {
 	rtime := ctx.PostValue("r_time")
 	rtoken := ctx.PostValue("r_token")
@@ -222,7 +233,7 @@ func AriticleUpdate(ctx context.Context) {
 	return
 }
 
-// 获取文章
+//GetArticle 获取文章
 func GetArticle(ctx context.Context) {
 	articleid, err := ctx.Params().GetInt("id")
 	if err != nil || articleid <= 0 {
@@ -238,7 +249,7 @@ func GetArticle(ctx context.Context) {
 	return
 }
 
-// 获取简单的文章列表
+//GetArticleList 获取简单的文章列表
 func GetArticleList(ctx context.Context) {
 	re := lib.GetSimpleArticleInfo()
 	ctx.JSON(NewRes(0, "", re))

@@ -2,7 +2,7 @@ package lib
 
 import (
 	"cache"
-	_ "cache"
+	_ "cache" //初始化数据库
 	"crypto/md5"
 	"encoding/base64"
 	"fmt"
@@ -15,17 +15,18 @@ import (
 	"github.com/mozillazg/request"
 )
 
-var register_key string = "awec12*"
-var auth_key string = "auth123&"
-var article_key string = "article&#$12"
-var new_article_key string = "article:"
-var red_userinfo string = "login:"
-var nextrid_key string = "regist:nextrid"
+var registerKey = "awec12*"
+var authKey = "auth123&"
+var ariticleKey = "article&#$12"
+var newArticleKey = "article:"
+var redisUserInfoKey = "login:"
+var nextRidKey = "regist:nextrid"
 
-const prefix_confirm string = "http://127.0.0.1:8080/register_confirm"
+const prefixConfirm = "http://127.0.0.1:8080/register_confirm"
 
-//cookie参数序列化
+//Serialize cookie参数序列化
 func Serialize(name string, value string, opt map[string]string) string {
+
 	result := make([]string, 0)
 	result = append(result, name+"="+value)
 	if val, ok := opt["maxAge"]; ok {
@@ -49,63 +50,66 @@ func Serialize(name string, value string, opt map[string]string) string {
 	return strings.Join(result, ";")
 }
 
-//获取md5
+//GetMd5 获取md5
 func GetMd5(raw string) string {
 	return fmt.Sprintf("%x", md5.Sum([]byte(raw)))
 }
 
-//字符串的base64加密
+//GetBase64 字符串的base64加密
 func GetBase64(raw string) string {
 	return base64.StdEncoding.EncodeToString([]byte(raw))
 }
 
-//base64字符串的解码
+//DecodeBase64 base64字符串的解码
 func DecodeBase64(raw string) (string, error) {
 	data, err := base64.StdEncoding.DecodeString(raw)
 	return string(data), err
 }
 
-//生成确认邮件的参数
-func GetConfirmUrl(email string, password string) string {
+//GetConfirmURL 生成确认邮件的参数
+func GetConfirmURL(email string, password string) string {
 	t := time.Now()
 	timestamp := strconv.Itoa(int(t.Unix()))
-	ecd_email := GetBase64(email)
-	ecd_password := GetBase64(password)
+	ecdEmail := GetBase64(email)
+	ecdPassword := GetBase64(password)
 
 	reslist := make([]string, 0)
 	reslist = append(reslist, "t="+timestamp)
-	reslist = append(reslist, "encoded_mail="+ecd_email)
-	reslist = append(reslist, "encoded_password="+ecd_password)
-	log.Println(register_key + "|" + timestamp + "|" + email + "|" + password)
-	reslist = append(reslist, "token="+GetMd5(register_key+"|"+timestamp+"|"+email+"|"+password))
+	reslist = append(reslist, "encoded_mail="+ecdEmail)
+	reslist = append(reslist, "encoded_password="+ecdPassword)
+	log.Println(registerKey + "|" + timestamp + "|" + email + "|" + password)
+	reslist = append(reslist, "token="+GetMd5(registerKey+"|"+timestamp+"|"+email+"|"+password))
 
-	return prefix_confirm + "?" + strings.Join(reslist, "&")
+	return prefixConfirm + "?" + strings.Join(reslist, "&")
 }
 
+//GetTags 获取标签
 func GetTags(raw string) []string {
 	relist := make([]string, 0)
 	return append(relist, "sfsf")
 }
 
-//获取当前的时间戳
+//GetNow 获取当前的时间戳
 func GetNow() string {
 	return strconv.Itoa(int(time.Now().Unix()))
 }
+
+//GetNowNano 获取当前的时间戳,纳秒级
 func GetNowNano() string {
 	return strconv.Itoa(int(time.Now().UnixNano()))
 }
 
-//ruc token校验
+//Auth1 ruc token校验
 func Auth1(ri string, rtime string, rtoken string) bool {
-	return GetMd5(auth_key+ri+rtime) == rtoken
+	return GetMd5(authKey+ri+rtime) == rtoken
 }
 
-//文章更新token校验
+//Auth2 文章更新token校验
 func Auth2(ri string, articleid int, aricletoken string) bool {
-	return GetMd5(article_key+ri+strconv.Itoa(articleid)) == aricletoken
+	return GetMd5(ariticleKey+ri+strconv.Itoa(articleid)) == aricletoken
 }
 
-//发送邮件
+//SendEmail 发送邮件
 func SendEmail(to string, msg string) error {
 	c := new(http.Client)
 	req := request.NewRequest(c)
@@ -115,7 +119,7 @@ func SendEmail(to string, msg string) error {
 	return err
 }
 
-//增加新文章
+//AddNewArticle 增加新文章
 func AddNewArticle(author string, title string, subtitle string, content string) error {
 	id, err := cache.DbAddNewArticle(author, title, subtitle, content, GetNowNano())
 	if err != nil {
@@ -129,35 +133,51 @@ func AddNewArticle(author string, title string, subtitle string, content string)
 	}
 	log.Println(tlen)
 	raw := strings.Join(GetTags(content[0:tlen]), "_")
-	return cache.CacheGenSimpleArticleInfo(new_article_key+strconv.Itoa(int(id)), "author", author, "tags", raw, "createdtime", GetNow())
+	return cache.RedSimpleArticleInfo(newArticleKey+strconv.Itoa(int(id)), "author", author, "tags", raw, "createdtime", GetNow())
 }
+
+//UpdateArticle 更新文章
 func UpdateArticle(articleid int, content string) error {
 	return cache.DbUpdateArticle(articleid, content)
 }
+
+//GetArticleContent 获取文章内容
 func GetArticleContent(articleid int) (string, string, string, string, string, error) {
 	return cache.DbGetArticleContent(articleid)
 }
+
+//GetPwdRid 获取密码和rid
 func GetPwdRid(mail string) ([]string, error) {
 	log.Println("GetPwdRid")
-	return cache.CacheGetPwdRid(red_userinfo+GetMd5(mail), "pwd", "rid")
+	return cache.RedGetPwdRid(redisUserInfoKey+GetMd5(mail), "pwd", "rid")
 }
+
+//SetPwdRid 设置密码和rid
 func SetPwdRid(mail string, pwd string, rid int) error {
-	return cache.CacheSetPwdRid(red_userinfo+GetMd5(mail), "pwd", pwd, "rid", strconv.Itoa(rid))
+	return cache.RedSetPwdRid(redisUserInfoKey+GetMd5(mail), "pwd", pwd, "rid", strconv.Itoa(rid))
 }
+
+//GetUserinfoByRid 通过rid获取用户信息
 func GetUserinfoByRid(rid int) (int, string, string, string, string) {
 	return cache.DbGetUserinfoByRid(rid)
 }
+
+//CheckExistsEmail 检查邮件是否有人使用
 func CheckExistsEmail(email string) bool {
-	b1, err := cache.CacheCheckExistsEmail(red_userinfo + GetMd5(email))
+	b1, err := cache.RedCheckExistsEmail(redisUserInfoKey + GetMd5(email))
 	if err != nil {
 		return true
 	}
 	return b1
 }
+
+//GetNextRid 下一个rid
 func GetNextRid() (int, error) {
-	nextrid, err := cache.CacheGetNextRid(nextrid_key)
+	nextrid, err := cache.RedGetNextRid(nextRidKey)
 	return int(nextrid), err
 }
+
+//GetSimpleArticleInfo 获取简单的文章信息
 func GetSimpleArticleInfo() []map[string]string {
 	return cache.DbGetSimpleArticleInfo()
 }

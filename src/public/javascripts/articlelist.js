@@ -7,7 +7,7 @@ Vue.component('article-list', {
   data: function () {
     return {
       articlelists: [],
-      prefix_article:"http://127.0.0.1:8080/view/article/"
+      prefix_article: "http://127.0.0.1:8080/view/article/"
     }
   },
   methods: {
@@ -15,7 +15,7 @@ Vue.component('article-list', {
       this.articlelists.push({
         title: "sdfsdfs",
         author: "liuyingmei",
-        
+
       })
       let test = this;
       let url = "http://127.0.0.1:8080/article/abstractlist"
