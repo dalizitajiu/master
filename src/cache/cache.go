@@ -33,10 +33,8 @@ func init() {
 		log.Fatal(err.Error())
 	}
 	//	red_client.Auth()
-	//	defer red_client.Quit()
 	db, err = sql.Open("mysql", "dev:dalizi1992@tcp(127.0.0.1:3306)/jack")
 	db.SetMaxOpenConns(20)
-	//	defer db.Close()
 	stmt_insert, _ = db.Prepare(sql_insert)
 	stmt_update, _ = db.Prepare(sql_updatearticle)
 	stmt_getarticle, _ = db.Prepare(sql_getarticle)
@@ -99,6 +97,7 @@ func DbGetUserinfoByRid(rrid int) (int, string, string, string, string) {
 	return rid, nickname, username, email, phone
 }
 func CacheCheckExistsEmail(key string) (bool, error) {
+
 	return red_client.Exists(key)
 }
 func CacheGetNextRid(key string) (int64, error) {
