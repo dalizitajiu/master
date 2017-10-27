@@ -27,7 +27,8 @@ func main() {
 	app.StaticWeb("/assert/javascript", "../public/javascripts")
 	app.StaticWeb("/assert/style", "../public/styles")
 
-	app.Get("/viewarticle/{id:int}", route.RenderArticle)
+	app.Get("/view/login", route.RenderLogin)
+	app.Get("/test/articlelist", route.RenderSideBar)
 	app.Get("/hello", route.Hello)
 	app.Post("/user/login", route.UserLogin)
 	app.Post("/user/register", route.UserRegister)
@@ -35,6 +36,7 @@ func main() {
 	app.Post("/article/addnew", route.ArticleAddNew)
 	app.Post("/article/{id:int}", route.GetArticle)
 	app.Post("/article/update", route.AriticleUpdate)
+	app.Get("/article/abstractlist", route.GetArticleList)
 
 	app.Run(iris.Addr(":8080"))
 }

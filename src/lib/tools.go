@@ -91,6 +91,9 @@ func GetTags(raw string) []string {
 func GetNow() string {
 	return strconv.Itoa(int(time.Now().Unix()))
 }
+func GetNowNano() string {
+	return strconv.Itoa(int(time.Now().UnixNano()))
+}
 
 //ruc token校验
 func Auth1(ri string, rtime string, rtoken string) bool {
@@ -114,7 +117,7 @@ func SendEmail(to string, msg string) error {
 
 //增加新文章
 func AddNewArticle(author string, title string, subtitle string, content string) error {
-	id, err := cache.DbAddNewArticle(author, title, subtitle, content)
+	id, err := cache.DbAddNewArticle(author, title, subtitle, content, GetNowNano())
 	if err != nil {
 		return err
 	}
@@ -154,4 +157,7 @@ func CheckExistsEmail(email string) bool {
 func GetNextRid() (int, error) {
 	nextrid, err := cache.CacheGetNextRid(nextrid_key)
 	return int(nextrid), err
+}
+func GetSimpleArticleInfo() []map[string]string {
+	return cache.DbGetSimpleArticleInfo()
 }

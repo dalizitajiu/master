@@ -18,12 +18,14 @@ var stmt_update *sql.Stmt
 var stmt_getbyauthor *sql.Stmt
 var stmt_getarticle *sql.Stmt
 var stmt_userinfo *sql.Stmt
+var stmt_simple_article_info *sql.Stmt
 
-var sql_insert string = "insert into article values(null,?,?,?,?)"
+var sql_insert string = "insert into article values(null,?,?,?,?,?)"
 var sql_getbyauthor string = "select * from article where author=?"
 var sql_updatearticle string = "update article set content=? where id=?"
 var sql_getarticle string = "select author,title,subtitle,content from article where id=?"
 var sql_userinfo string = "select rid,nickname,email,phone,username from userinfo where rid=?"
+var sql_simple_article_info = "select author,title,createtime from article order by createtime desc"
 
 func init() {
 	log.Println("inti in cache.go")
@@ -39,6 +41,7 @@ func init() {
 	stmt_update, _ = db.Prepare(sql_updatearticle)
 	stmt_getarticle, _ = db.Prepare(sql_getarticle)
 	stmt_userinfo, _ = db.Prepare(sql_userinfo)
+	stmt_simple_article_info, _ = db.Prepare(sql_simple_article_info)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -56,8 +59,8 @@ func CacheSetPwdRid(key string, fld1 string, val1 string, fld2 string, val2 stri
 	return err
 
 }
-func DbAddNewArticle(author string, title string, subtitle string, content string) (int, error) {
-	res, err := stmt_insert.Exec(author, title, subtitle, content)
+func DbAddNewArticle(author string, title string, subtitle string, content string, createtime string) (int, error) {
+	res, err := stmt_insert.Exec(author, title, subtitle, content, createtime)
 	if err != nil {
 		log.Println("mysql 错误")
 		return 0, err
@@ -83,6 +86,23 @@ func DbGetArticleContent(articleid int) (string, string, string, string, error) 
 
 	return author, title, subtitle, content, nil
 }
+func DbGetSimpleArticleInfo() []map[string]string {
+	res, _ := stmt_simple_article_info.Query()
+	re := make([]map[string]string, 0)
+	var author string
+	var title string
+	var createtime string
+	for res.Next() {
+		res.Scan(&author, &title, &createtime)
+		temp := make(map[string]string)
+		temp["author"] = author
+		temp["title"] = title
+		temp["createtime"] = createtime
+		re = append(re, temp)
+	}
+	return re
+
+}
 func DbGetUserinfoByRid(rrid int) (int, string, string, string, string) {
 	rows := stmt_userinfo.QueryRow(rrid)
 	var rid int
@@ -90,7 +110,7 @@ func DbGetUserinfoByRid(rrid int) (int, string, string, string, string) {
 	var username string
 	var email string
 	var phone string
-	err := rows.Scan(&rid, &username, &nickname, &email, &phone)
+	err := rows.Scan(&rid, &username, &email, &phone, &nickname)
 	if err != nil {
 		return 0, "", "", "", ""
 	}
