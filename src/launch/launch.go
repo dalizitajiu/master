@@ -5,7 +5,6 @@ import (
 	"route"
 
 	"github.com/kataras/iris"
-	//	"github.com/kataras/iris/context"
 	"github.com/kataras/iris/middleware/logger"
 	"github.com/kataras/iris/middleware/recover"
 )
@@ -27,6 +26,7 @@ func main() {
 	app.StaticWeb("/assert/javascript", "../public/javascripts")
 	app.StaticWeb("/assert/style", "../public/styles")
 
+	app.Get("/view/artile/{id:int}", route.RenderArticle)
 	app.Get("/view/login", route.RenderLogin)
 	app.Get("/test/articlelist", route.RenderSideBar)
 	app.Get("/hello", route.Hello)
