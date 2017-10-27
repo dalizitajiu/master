@@ -23,7 +23,7 @@ var stmtGetSimpleArticleInfo *sql.Stmt
 var sqlInsert = "insert into article values(null,?,?,?,?,?)"
 var sqlGetByAuthor = "select * from article where author=?"
 var sqlUpdateArticle = "update article set content=? where id=?"
-var sqlGetArticle = "select author,title,subtitle,content from article where id=?"
+var sqlGetArticle = "select author,title,subtitle,content,createtime from article where id=?"
 var sqlGetUserInfo = "select rid,nickname,email,phone,username from userinfo where rid=?"
 var sqlGetSimpleArticleInfo = "select id,author,title,createtime from article order by createtime desc"
 
@@ -97,7 +97,7 @@ func DbGetArticleContent(articleid int) (string, string, string, string, string,
 	var content string
 	var createtime string
 	res.Scan(&author, &title, &subtitle, &content, &createtime)
-
+	log.Println(author, title, subtitle, content, createtime)
 	return author, title, subtitle, content, createtime, nil
 }
 

@@ -22,11 +22,13 @@ func RenderSideBar(ctx context.Context) {
 //RenderArticle 文章浏览
 func RenderArticle(ctx context.Context) {
 	id, _ := ctx.Params().GetInt("id")
-	_, author, title, subtitle, content, createtime := lib.GetArticleContent(id)
+	log.Println("当前要浏览的文章id是", id)
+	author, title, subtitle, content, createtime, _ := lib.GetArticleContent(id)
+	log.Println(author, title, subtitle, content, createtime)
 	ctx.ViewData("author", author)
 	ctx.ViewData("title", title)
 	ctx.ViewData("subtitle", subtitle)
 	ctx.ViewData("content", content)
 	ctx.ViewData("createtime", createtime)
-	ctx.View("viewarticle.html")
+	ctx.View("article.html")
 }
