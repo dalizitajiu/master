@@ -1,14 +1,32 @@
 <html>
-    <head>
-        <script src="/assert/javascript/vue.js"></script>
-        <script src="/assert/javascript/axios.min.js"></script>
-    </head>
-    <body>
-        <h1>{{.title}}</h1>
-        <h3>{{.subtitle}}</h3>
-        <h5>{{.author}}--in--{{.createtime}}</h5>
-        <div>
-            {{.content}}
-        </div>
-    </body>
+
+<head>
+    <script src="/assert/javascript/vue.js"></script>
+    <script src="/assert/javascript/axios.min.js"></script>
+    <script src="/assert/javascript/articlelist.js"></script>
+    <link rel="stylesheet" type="text/css" href="/assert/style/article.css" />
+</head>
+
+<body>
+    <div id="sidebar">
+        <article-list></article-list>
+    </div>
+    <script>
+        var obj_article_list=(new Vue({
+            el:"#sidebar"
+        })).$children[0];
+        obj_article_list.getSimpleData();
+    </script>
+    <div class="article_box">
+        <h1 class="title">{{.title}}</h1>
+        <h3 class="subtitle">{{.subtitle}}</h3>
+        <h5 class="author">{{.author}}--in--{{.createtime}}</h5>
+        <div id="content" class="content">{{.content}}</div>
+        <script>
+            obj_content = document.getElementById("content")
+            obj_content.innerHTML = obj_content.innerHTML.replace(/(\&|\&)gt;/g, ">").replace(/(\&|\&)lt;/g, "<").replace(/(\&|\&)quot;/g, "\"");
+        </script>
+    </div>
+</body>
+
 </html>

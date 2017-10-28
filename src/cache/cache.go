@@ -20,12 +20,12 @@ var stmtGetArticle *sql.Stmt
 var stmtGetUserInfo *sql.Stmt
 var stmtGetSimpleArticleInfo *sql.Stmt
 
-var sqlInsert = "insert into article values(null,?,?,?,?,?)"
+var sqlInsert = "insert into article values(null,?,?,?,?)"
 var sqlGetByAuthor = "select * from article where author=?"
 var sqlUpdateArticle = "update article set content=? where id=?"
-var sqlGetArticle = "select author,title,subtitle,content,createtime from article where id=?"
+var sqlGetArticle = "select author,title,content,createtime from article where id=?"
 var sqlGetUserInfo = "select rid,nickname,email,phone,username from userinfo where rid=?"
-var sqlGetSimpleArticleInfo = "select id,author,title,createtime from article order by createtime desc"
+var sqlGetSimpleArticleInfo = "select id,author,title,createtime from article order by createtime desc limit ?,?"
 
 func init() {
 	log.Println("inti in cache.go")
@@ -68,8 +68,8 @@ func RedSetPwdRid(key string, fld1 string, val1 string, fld2 string, val2 string
 }
 
 //DbAddNewArticle mysql增加新纹章
-func DbAddNewArticle(author string, title string, subtitle string, content string, createtime string) (int, error) {
-	res, err := stmtInsert.Exec(author, title, subtitle, content, createtime)
+func DbAddNewArticle(author string, title string, content string, createtime string) (int, error) {
+	res, err := stmtInsert.Exec(author, title, content, createtime)
 	if err != nil {
 		log.Println("mysql 错误")
 		return 0, err
@@ -88,22 +88,21 @@ func DbUpdateArticle(articleid int, content string) error {
 }
 
 //DbGetArticleContent mysql获取文章内容
-func DbGetArticleContent(articleid int) (string, string, string, string, string, error) {
+func DbGetArticleContent(articleid int) (string, string, string, string, error) {
 	res := stmtGetArticle.QueryRow(articleid)
 
 	var author string
 	var title string
-	var subtitle string
 	var content string
 	var createtime string
-	res.Scan(&author, &title, &subtitle, &content, &createtime)
-	log.Println(author, title, subtitle, content, createtime)
-	return author, title, subtitle, content, createtime, nil
+	res.Scan(&author, &title, &content, &createtime)
+	log.Println(author, title, content, createtime)
+	return author, title, content, createtime, nil
 }
 
 //DbGetSimpleArticleInfo mysql获取简单的文章信息
-func DbGetSimpleArticleInfo() []map[string]string {
-	res, _ := stmtGetSimpleArticleInfo.Query()
+func DbGetSimpleArticleInfo(pageno int, pagenum int) []map[string]string {
+	res, _ := stmtGetSimpleArticleInfo.Query(pageno, pagenum)
 	re := make([]map[string]string, 0)
 	var id string
 	var author string
@@ -123,18 +122,19 @@ func DbGetSimpleArticleInfo() []map[string]string {
 }
 
 //DbGetUserinfoByRid msql通过rid获取用户信息
-func DbGetUserinfoByRid(rrid int) (int, string, string, string, string) {
+func DbGetUserinfoByRid(rrid string) (string, string, string, string, string) {
 	rows := stmtGetUserInfo.QueryRow(rrid)
-	var rid int
+	var rid string
 	var nickname string
 	var username string
 	var email string
 	var phone string
 	err := rows.Scan(&rid, &username, &email, &phone, &nickname)
 	if err != nil {
-		return 0, "", "", "", ""
+		return "", "", "", "", ""
 	}
-	return rid, nickname, username, email, phone
+	log.Println("in dbgetuserinfobyrid")
+	return rid, username, email, phone, nickname
 }
 
 //RedCheckExistsEmail redis检测该邮箱有没有被使用

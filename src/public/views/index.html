@@ -1,0 +1,29 @@
+<html>
+
+<head>
+    <script src="/assert/javascript/vue.js"></script>
+    <script src="/assert/javascript/axios.min.js"></script>
+    <script src="/assert/javascript/articlelist.js"></script>
+    <link rel="stylesheet" type="text/css" href="/assert/style/index.css" />
+</head>
+
+<body>
+    <div id="sidebar">
+        <article-list></article-list>
+    </div>
+    <script>
+        var obj_article_list = (new Vue({
+            el: "#sidebar"
+        })).$children[0];
+        obj_article_list.getSimpleData();
+    </script>
+    <div class="indexcontent">
+            <h2>&nbsp; &nbsp; &nbsp; 大家好，我是大狸子它舅，这个我的个人博客。博客服务端用的是go，前端用的vue，我目前还在学习中，会把自己学到的一些东西放在我的博客上。如果大家有什么和我交流的话，可以在我的微博下留言。</h2>
+            <h2>&nbsp; &nbsp; &nbsp; 微博名字：我2828</h2>
+            <br>
+            <br>
+            <h2>&nbsp; &nbsp; &nbsp; <a href="https://github.com/dalizitajiu/master">github地址:https://github.com/dalizitajiu/master</a></h2>
+    </div>
+</body>
+
+</html>

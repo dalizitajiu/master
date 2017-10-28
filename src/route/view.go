@@ -23,12 +23,26 @@ func RenderSideBar(ctx context.Context) {
 func RenderArticle(ctx context.Context) {
 	id, _ := ctx.Params().GetInt("id")
 	log.Println("当前要浏览的文章id是", id)
-	author, title, subtitle, content, createtime, _ := lib.GetArticleContent(id)
-	log.Println(author, title, subtitle, content, createtime)
+	author, title, content, createtime, _ := lib.GetArticleContent(id)
+	if author == "" {
+		ctx.Redirect("/")
+	}
+	log.Println(author, title, content, createtime)
 	ctx.ViewData("author", author)
 	ctx.ViewData("title", title)
-	ctx.ViewData("subtitle", subtitle)
 	ctx.ViewData("content", content)
-	ctx.ViewData("createtime", createtime)
+	ctx.ViewData("createtime", lib.TimeStampToUTC(createtime))
 	ctx.View("article.html")
+}
+
+//RenderAddNewArticle 返回增加新文章的模板
+func RenderAddNewArticle(ctx context.Context) {
+	//todo 访问配置
+
+	ctx.View("editarticle.html")
+}
+
+//RenderIndex 默认页
+func RenderIndex(ctx context.Context) {
+	ctx.View("index.html")
 }

@@ -1,0 +1,19 @@
+.article_box{
+    width:60%;
+    margin-left: 20%;
+}
+.title{
+    text-align: center;
+}
+
+.author{
+    text-align: left;
+    margin-left: 70%;
+}
+.content{
+    font-size: 14px;
+}
+#sidebar{
+    float: left;
+    margin-top: 20%;
+}

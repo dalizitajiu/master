@@ -89,6 +89,11 @@ func GetTags(raw string) []string {
 	return append(relist, "sfsf")
 }
 
+//GenToken 生成ruc token
+func GenToken(rid string, ctime string) string {
+	return GetMd5(authKey + rid + ctime)
+}
+
 //GetNow 获取当前的时间戳
 func GetNow() string {
 	return strconv.Itoa(int(time.Now().Unix()))
@@ -120,10 +125,11 @@ func SendEmail(to string, msg string) error {
 }
 
 //AddNewArticle 增加新文章
-func AddNewArticle(author string, title string, subtitle string, content string) error {
-	id, err := cache.DbAddNewArticle(author, title, subtitle, content, GetNowNano())
+func AddNewArticle(author string, title string, content string) (int, error) {
+	id, err := cache.DbAddNewArticle(author, title, content, GetNow())
 	if err != nil {
-		return err
+		log.Println("这里发生了错误")
+		return 0, err
 	}
 	var tlen int
 	if len(content) < 100 {
@@ -133,7 +139,7 @@ func AddNewArticle(author string, title string, subtitle string, content string)
 	}
 	log.Println(tlen)
 	raw := strings.Join(GetTags(content[0:tlen]), "_")
-	return cache.RedSimpleArticleInfo(newArticleKey+strconv.Itoa(int(id)), "author", author, "tags", raw, "createdtime", GetNow())
+	return id, cache.RedSimpleArticleInfo(newArticleKey+strconv.Itoa(int(id)), "author", author, "tags", raw, "createdtime", GetNow())
 }
 
 //UpdateArticle 更新文章
@@ -142,7 +148,7 @@ func UpdateArticle(articleid int, content string) error {
 }
 
 //GetArticleContent 获取文章内容
-func GetArticleContent(articleid int) (string, string, string, string, string, error) {
+func GetArticleContent(articleid int) (string, string, string, string, error) {
 	return cache.DbGetArticleContent(articleid)
 }
 
@@ -158,7 +164,7 @@ func SetPwdRid(mail string, pwd string, rid int) error {
 }
 
 //GetUserinfoByRid 通过rid获取用户信息
-func GetUserinfoByRid(rid int) (int, string, string, string, string) {
+func GetUserinfoByRid(rid string) (string, string, string, string, string) {
 	return cache.DbGetUserinfoByRid(rid)
 }
 
@@ -178,6 +184,12 @@ func GetNextRid() (int, error) {
 }
 
 //GetSimpleArticleInfo 获取简单的文章信息
-func GetSimpleArticleInfo() []map[string]string {
-	return cache.DbGetSimpleArticleInfo()
+func GetSimpleArticleInfo(pageno int) []map[string]string {
+	return cache.DbGetSimpleArticleInfo(pageno*10, 10)
+}
+
+//TimeStampToUTC 时间戳转为普通时间
+func TimeStampToUTC(timestamp string) string {
+	t, _ := strconv.ParseInt(timestamp, 10, 64)
+	return time.Unix(t, 0).Format("2006-01-02 15:04:05")
 }

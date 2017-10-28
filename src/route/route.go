@@ -19,7 +19,7 @@ type Res struct {
 
 //UserInfo 用户信息
 type UserInfo struct {
-	Rid      int    `json:"rid"`
+	Rid      string `json:"rid"`
 	Email    string `json:"email"`
 	NickName string `json:"nickname"`
 	UserName string `json:"username"`
@@ -30,7 +30,6 @@ type UserInfo struct {
 type ArticleInfo struct {
 	Author     string `json:"author"`
 	Title      string `json:"title"`
-	Subtitle   string `json:"subtitle"`
 	Content    string `json:"content"`
 	CreateTime string `json:"createtime"`
 }
@@ -50,13 +49,13 @@ func NewRes(errno int, errmsg string, data interface{}) Res {
 }
 
 //NewUserInfo 新的用户信息
-func NewUserInfo(rid int, email string, nickname string, phone string, username string) UserInfo {
+func NewUserInfo(rid string, email string, nickname string, phone string, username string) UserInfo {
 	return UserInfo{rid, email, nickname, phone, username}
 }
 
 //NewAritcleInfo 新的文章信息
-func NewAritcleInfo(author string, title string, subtitle string, content string, createtime string) ArticleInfo {
-	return ArticleInfo{author, title, subtitle, content, createtime}
+func NewAritcleInfo(author string, title string, content string, createtime string) ArticleInfo {
+	return ArticleInfo{author, title, content, createtime}
 }
 
 //Hello 测试用
@@ -89,9 +88,12 @@ func UserLogin(ctx context.Context) {
 		ctx.JSON(NewRes(1003, "账号或者密码错误", ""))
 		return
 	}
-	rrid, _ := strconv.Atoi(rsrid)
+	rrid := rsrid
 	rid, nickname, email, phone, username := lib.GetUserinfoByRid(rrid)
-	ctx.Header("Set-Cookie", lib.Serialize("fuck", "shit", map[string]string{"maxAge": "60", "path": "/", "domin": "127.0.0.1"}))
+	currenttime := lib.GetNow()
+	ctx.Header("Set-Cookie", lib.Serialize("I", rid, map[string]string{"maxAge": "3600*1", "path": "/", "domin": "127.0.0.1"}))
+	ctx.Header("Set-Cookie", lib.Serialize("r_time", currenttime, map[string]string{"maxAge": "3600", "path": "/", "domin": "127.0.0.1"}))
+	ctx.Header("Set-Cookie", lib.Serialize("r_token", lib.GenToken(rrid, currenttime), map[string]string{"maxAge": "3600", "path": "/", "domin": "127.0.0.1"}))
 	ctx.JSON(NewRes(0, "", NewUserInfo(rid, email, username, phone, nickname)))
 	return
 }
@@ -173,14 +175,34 @@ func RegisterConfirm(ctx context.Context) {
 
 //ArticleAddNew 增加新文章
 func ArticleAddNew(ctx context.Context) {
-	rtime := ctx.PostValue("r_time")
-	rtoken := ctx.PostValue("r_token")
 	rid := ctx.GetCookie("I")
-	author := ctx.PostValue("r_author")
+	_, _, _, _, nickname := lib.GetUserinfoByRid(rid)
+	log.Println("昵称是", nickname)
+	author := nickname
 	title := ctx.PostValue("r_title")
-	subtitle := ctx.PostValue("r_subtitle")
+	log.Println(ctx)
 	content := ctx.PostValue("r_content")
-	if rid == "" || rtime == "" || rtoken == "" || author == "" || title == "" || content == "" {
+	log.Println("昵称是", author, title, content)
+	if author == "" || title == "" || content == "" {
+		ctx.JSON(NewRes(1001, "参数错误", ""))
+		return
+	}
+
+	id, err := lib.AddNewArticle(author, title, content)
+	if err != nil {
+		ctx.JSON(NewRes(1003, "此标题已经存在", ""))
+		return
+	}
+	ctx.JSON(NewRes(0, "成功提交", id))
+}
+
+//MiddleAuth ruc中间件
+func MiddleAuth(ctx context.Context) {
+	rid := ctx.GetCookie("I")
+	rtime := ctx.GetCookie("r_time")
+	rtoken := ctx.GetCookie("r_token")
+
+	if rid == "" || rtime == "" || rtoken == "" {
 		ctx.JSON(NewRes(1001, "参数错误", ""))
 		return
 	}
@@ -194,12 +216,8 @@ func ArticleAddNew(ctx context.Context) {
 		ctx.JSON(NewRes(1002, "token错误", ""))
 		return
 	}
-	err := lib.AddNewArticle(author, title, subtitle, content)
-	if err != nil {
-		ctx.JSON(NewRes(1003, "此标题已经存在", ""))
-		return
-	}
-	ctx.JSON(NewRes(0, "成功提交", ""))
+	log.Println("RUC校验成功")
+	ctx.Next()
 }
 
 //AriticleUpdate 文章更新
@@ -240,18 +258,25 @@ func GetArticle(ctx context.Context) {
 		ctx.JSON(NewRes(1001, "不存在该页面", ""))
 		return
 	}
-	author, title, subtitle, content, createtime, err := lib.GetArticleContent(articleid)
+	author, title, content, createtime, err := lib.GetArticleContent(articleid)
+
 	if err != nil {
 		ctx.JSON(NewRes(1002, "内部错误", ""))
 		return
 	}
-	ctx.JSON(NewRes(0, "", NewAritcleInfo(author, title, subtitle, content, createtime)))
+	ctx.JSON(NewRes(0, "", NewAritcleInfo(author, title, content, lib.TimeStampToUTC(createtime))))
 	return
 }
 
 //GetArticleList 获取简单的文章列表
 func GetArticleList(ctx context.Context) {
-	re := lib.GetSimpleArticleInfo()
+	rpageno := ctx.FormValue("pageno")
+	pageno, err := strconv.Atoi(rpageno)
+	if err != nil || pageno < 0 {
+		ctx.JSON(NewRes(0, "", ""))
+		return
+	}
+	re := lib.GetSimpleArticleInfo(pageno)
 	ctx.JSON(NewRes(0, "", re))
 	return
 }

@@ -1,0 +1,53 @@
+<html>
+
+<head>
+    <script src="/assert/javascript/tinymce/tinymce.min.js"></script>
+    <script src="/assert/javascript/axios.min.js"></script>
+    <style>
+        #title{
+            width:80%;
+            height:50px;
+            font-size: 40px;
+        }
+    </style>
+</head>
+
+<body>
+    <div style="font-size:40px">文章标题--<input id="title" type="text"></div>
+    <br>
+    <br>
+    <textarea class="editarea">
+            Hello,lixiaomeng!
+    </textarea>
+    <input id="commit_article" type="button" onclick="dosubmit()" value="提交文章">
+    <script>
+        axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
+        tinymce.init({ 
+            selector: 'textarea',
+            theme_advanced_resizing : false,
+        });
+        btn_submit = document.getElementById("commit_article")
+        function dosubmit() {
+            var obj_title = document.getElementById("title");
+            var obj_subtitle = document.getElementById("subtitle");
+            var content = tinyMCE.activeEditor.getContent();
+            let param = new URLSearchParams()
+            param.append("r_title", obj_title.value)
+            param.append("r_content", content)
+            axios.post("http://127.0.0.1:8080/article/addnew", param).then(function (response) {
+                // if(response.body)
+                if(response.data.errno!=0){
+                    window.location.href="/view/login"
+                }else{
+                    let id=response.data.data;
+                    window.location.href=`/view/article/${id}`
+                }
+            }).catch(function (err) {
+                console.log(err)
+            })
+
+        }
+    </script>
+</body>
+
+</html>
