@@ -222,8 +222,8 @@ func MiddleAuth(ctx context.Context) {
 
 //AriticleUpdate 文章更新
 func AriticleUpdate(ctx context.Context) {
-	rtime := ctx.PostValue("r_time")
-	rtoken := ctx.PostValue("r_token")
+	rtime := ctx.GetCookie("r_time")
+	rtoken := ctx.GetCookie("r_token")
 	ri := ctx.GetCookie("I")
 	rrarticleid := ctx.PostValue("r_articleid")
 	rarticletoken := ctx.PostValue("r_articletoken")
@@ -278,5 +278,18 @@ func GetArticleList(ctx context.Context) {
 	}
 	re := lib.GetSimpleArticleInfo(pageno)
 	ctx.JSON(NewRes(0, "", re))
+	return
+}
+
+//GetArticleToken 生成文章的token
+func GetArticleToken(ctx context.Context) {
+	rid := ctx.GetCookie("I")
+	articleid := ctx.FormValue("articleid")
+	_, err := strconv.Atoi(articleid)
+	if err != nil {
+		ctx.JSON(NewRes(1001, "参数错误", ""))
+		return
+	}
+	ctx.JSON(NewRes(0, "", lib.GenArticleToken(rid, articleid)))
 	return
 }

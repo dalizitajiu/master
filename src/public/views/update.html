@@ -1,0 +1,97 @@
+<html>
+
+<head>
+    <script src="/assert/javascript/tinymce/tinymce.min.js"></script>
+    <script src="/assert/javascript/axios.min.js"></script>
+    <style>
+        #title {
+            width: 80%;
+            height: 50px;
+            font-size: 40px;
+        }
+    </style>
+</head>
+
+<body>
+    <div style="font-size:40px">文章标题--
+        <input id="title" type="text">
+    </div>
+    <br>
+    <br>
+    <textarea class="editarea">
+                Hello,lixiaomeng!
+        </textarea>
+    <input id="commit_article" type="button" onclick="dosubmit()" value="提交文章">
+    <script>
+        axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
+        tinymce.init({
+            selector: 'textarea',
+            theme_advanced_resizing: false,
+        });
+        let obj_title = document.getElementById("title")
+        var currentid = (window.location.href).split("/").pop()
+        var articletoken = getarticletoken()
+        // 获取文章的token
+        function getarticletoken(id) {
+            if (Number.isInteger(id)) {
+                axios.get(`/article/gettoken?articleid=${currentid}`).then(function (response) {
+                    obj_res = response.data;
+                    if (obj_res.errno == 0) {
+                        return obj_res.data;
+                    }
+                }).catch(function(err){
+                    console.log(err)
+                    return null
+                })
+            }else{
+                return null
+            }
+        }
+
+
+        let obj_data = getcontent(currentid);
+        if (obj_data != null) {
+            obj_title.value = obj_data.title;
+            tinyMCE.activeEditor.setContent(obj_data.content);
+        }
+        //获取文章内容
+        function getcontent(id) {
+            if (Number.isInteger(id)) {
+                axios.get(`/article/${id}`).then(function (response) {
+                    let obj_data = response.data.data;
+                    return obj_data
+                }).catch(function (err) {
+                    console.log(err)
+                    return null
+                })
+            } else {
+                return null
+            }
+        }
+        btn_submit = document.getElementById("commit_article")
+        //提交文章
+        function dosubmit() {
+            var obj_title = document.getElementById("title");
+            var obj_subtitle = document.getElementById("subtitle");
+            var content = tinyMCE.activeEditor.getContent();
+            let param = new URLSearchParams()
+            param.append("r_articleid",currentid)
+            param.append("r_articletoken",articletoken)
+            param.append("r_content", content)
+            axios.post("http://127.0.0.1:8080/article/update", param).then(function (response) {
+                // if(response.body)
+                if (response.data.errno != 0) {
+                    window.location.href = "/view/login"
+                } else {
+                    let id = response.data.data;
+                    window.location.href = `/view/article/${id}`
+                }
+            }).catch(function (err) {
+                console.log(err)
+            })
+
+        }
+    </script>
+</body>
+
+</html>

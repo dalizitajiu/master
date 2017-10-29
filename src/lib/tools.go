@@ -94,6 +94,11 @@ func GenToken(rid string, ctime string) string {
 	return GetMd5(authKey + rid + ctime)
 }
 
+//GenArticleToken 生成文章的token
+func GenArticleToken(rid string, articleid string) string {
+	return GetMd5(ariticleKey + rid + articleid)
+}
+
 //GetNow 获取当前的时间戳
 func GetNow() string {
 	return strconv.Itoa(int(time.Now().Unix()))
@@ -110,8 +115,8 @@ func Auth1(rid string, rtime string, rtoken string) bool {
 }
 
 //Auth2 文章更新token校验
-func Auth2(ri string, articleid int, aricletoken string) bool {
-	return GetMd5(ariticleKey+ri+strconv.Itoa(articleid)) == aricletoken
+func Auth2(rid string, articleid int, articletoken string) bool {
+	return GetMd5(ariticleKey+rid+strconv.Itoa(articleid)) == articletoken
 }
 
 //SendEmail 发送邮件

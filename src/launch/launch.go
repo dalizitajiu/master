@@ -31,15 +31,17 @@ func main() {
 	app.Get("/view/login", route.RenderLogin)
 	app.Get("/test/articlelist", route.RenderSideBar)
 	app.Get("/article/new", route.RenderAddNewArticle)
+	app.Get("/article/update/{id:int}", route.RenderUpdate)
 
 	app.Get("/hello", route.Hello)
 	app.Post("/user/login", route.UserLogin)
 	app.Post("/user/register", route.UserRegister)
 	app.Get("/register_confirm", route.RegisterConfirm)
 	app.Post("/article/addnew", route.MiddleAuth, route.ArticleAddNew)
-	app.Post("/article/{id:int}", route.GetArticle)
-	app.Post("/article/update", route.AriticleUpdate)
+	app.Get("/article/{id:int}", route.GetArticle)
+	app.Post("/article/update", route.MiddleAuth, route.AriticleUpdate)
 	app.Get("/article/abstractlist", route.GetArticleList)
+	app.Get("/article/gettoken", route.MiddleAuth, route.GetArticleToken)
 
 	app.Run(iris.Addr(":8080"))
 }

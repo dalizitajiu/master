@@ -46,3 +46,8 @@ func RenderAddNewArticle(ctx context.Context) {
 func RenderIndex(ctx context.Context) {
 	ctx.View("index.html")
 }
+
+//RenderUpdate 更新的页面
+func RenderUpdate(ctx context.Context) {
+	ctx.View("update.html")
+}
