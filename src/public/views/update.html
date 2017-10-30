@@ -3,6 +3,12 @@
 <head>
     <script src="/assert/javascript/tinymce/tinymce.min.js"></script>
     <script src="/assert/javascript/axios.min.js"></script>
+    <script>
+        tinymce.init({
+            selector: 'textarea',
+            theme_advanced_resizing: false,
+        });
+    </script>
     <style>
         #title {
             width: 80%;
@@ -12,7 +18,7 @@
     </style>
 </head>
 
-<body>
+<body onload="init()">
     <div style="font-size:40px">文章标题--
         <input id="title" type="text">
     </div>
@@ -24,70 +30,59 @@
     <input id="commit_article" type="button" onclick="dosubmit()" value="提交文章">
     <script>
         axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
-        tinymce.init({
-            selector: 'textarea',
-            theme_advanced_resizing: false,
-        });
-        let obj_title = document.getElementById("title")
-        var currentid = (window.location.href).split("/").pop()
-        var articletoken = getarticletoken()
+
+        let obj_title = document.getElementById("title");
+        var rawid = (window.location.href).split("/").pop();
+        var currentid = parseInt(rawid)
+        var articletoken = null;
+        var self = this;
         // 获取文章的token
-        function getarticletoken(id) {
-            if (Number.isInteger(id)) {
-                axios.get(`/article/gettoken?articleid=${currentid}`).then(function (response) {
+        function init() {
+            if (Number.isInteger(currentid)) {
+                axios.get("http://127.0.0.1:8080/article/gettoken?articleid=" + currentid).then(function (response) {
                     obj_res = response.data;
                     if (obj_res.errno == 0) {
-                        return obj_res.data;
+                        self.articletoken = obj_res.data;
                     }
-                }).catch(function(err){
-                    console.log(err)
-                    return null
-                })
-            }else{
-                return null
-            }
-        }
-
-
-        let obj_data = getcontent(currentid);
-        if (obj_data != null) {
-            obj_title.value = obj_data.title;
-            tinyMCE.activeEditor.setContent(obj_data.content);
-        }
-        //获取文章内容
-        function getcontent(id) {
-            if (Number.isInteger(id)) {
-                axios.get(`/article/${id}`).then(function (response) {
-                    let obj_data = response.data.data;
-                    return obj_data
                 }).catch(function (err) {
-                    console.log(err)
-                    return null
+                    console.log(err);
                 })
-            } else {
-                return null
+            }
+            console.log(tinyMCE.activeEditor.getContent())
+            //获取文章内容
+            if (Number.isInteger(currentid)) {
+                axios.get("http://127.0.0.1:8080/article/" + currentid).then(function (response) {
+                    let data = response.data.data;
+                    console.log(data);
+                    obj_title.value = data.title;
+                    console.log(typeof (data.content));
+                    console.log(tinyMCE.activeEditor.getContent())
+                    tinyMCE.activeEditor.setContent(data.content)
+                }).catch(function (err) {
+                    console.log(err);
+                })
             }
         }
+
         btn_submit = document.getElementById("commit_article")
         //提交文章
         function dosubmit() {
             var obj_title = document.getElementById("title");
-            var obj_subtitle = document.getElementById("subtitle");
             var content = tinyMCE.activeEditor.getContent();
-            let param = new URLSearchParams()
-            param.append("r_articleid",currentid)
-            param.append("r_articletoken",articletoken)
-            param.append("r_content", content)
+            let param = new URLSearchParams();
+            param.append("r_articleid", currentid);
+            param.append("r_articletoken", articletoken);
+            param.append("r_content", content);
             axios.post("http://127.0.0.1:8080/article/update", param).then(function (response) {
                 // if(response.body)
                 if (response.data.errno != 0) {
-                    window.location.href = "/view/login"
+                    window.location.href = "http://127.0.0.1:8080/view/login";
                 } else {
-                    let id = response.data.data;
-                    window.location.href = `/view/article/${id}`
+                    console.log("currentid=",currentid)
+                    window.location.href = "http://127.0.0.1:8080/view/article/" + currentid;
                 }
             }).catch(function (err) {
-                console.log(err)
+                console.log(err);
             })
 
         }
