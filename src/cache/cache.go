@@ -19,6 +19,7 @@ var stmtGetByAuthor *sql.Stmt
 var stmtGetArticle *sql.Stmt
 var stmtGetUserInfo *sql.Stmt
 var stmtGetSimpleArticleInfo *sql.Stmt
+var stmtGetArticlesByRid *sql.Stmt
 
 var sqlInsert = "insert into article values(null,?,?,?,?)"
 var sqlGetByAuthor = "select * from article where author=?"
@@ -26,6 +27,7 @@ var sqlUpdateArticle = "update article set content=? where id=?"
 var sqlGetArticle = "select author,title,content,createtime from article where id=?"
 var sqlGetUserInfo = "select rid,nickname,email,phone,username from userinfo where rid=?"
 var sqlGetSimpleArticleInfo = "select id,author,title,createtime from article order by createtime desc limit ?,?"
+var sqlGetArticlesByRid = "select id,author,title,createtime form article where rid=? order by createtime"
 
 func init() {
 	log.Println("inti in cache.go")
@@ -42,7 +44,7 @@ func init() {
 	stmtGetArticle, _ = db.Prepare(sqlGetArticle)
 	stmtGetUserInfo, _ = db.Prepare(sqlGetUserInfo)
 	stmtGetSimpleArticleInfo, _ = db.Prepare(sqlGetSimpleArticleInfo)
-
+	stmtGetArticlesByRid, _ = db.Prepare(sqlGetArticlesByRid)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -146,4 +148,27 @@ func RedCheckExistsEmail(key string) (bool, error) {
 //RedGetNextRid redis获取下一个rid
 func RedGetNextRid(key string) (int64, error) {
 	return redisClient.Incr(key)
+}
+
+// GetArticlesByRid 根据rid获取对应的文章
+func GetArticlesByRid(rid string) []map[string]string {
+	res, err := stmtGetArticlesByRid.Query(rid)
+	if err != nil {
+		return nil
+	}
+	re := make([]map[string]string, 0)
+	var id string
+	var author string
+	var title string
+	var createtime string
+	for res.Next() {
+		res.Scan(&id, &author, &title, &createtime)
+		temp := make(map[string]string)
+		temp["id"] = id
+		temp["author"] = author
+		temp["title"] = title
+		temp["createtime"] = createtime
+		re = append(re, temp)
+	}
+	return re
 }
