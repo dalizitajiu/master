@@ -51,3 +51,8 @@ func RenderIndex(ctx context.Context) {
 func RenderUpdate(ctx context.Context) {
 	ctx.View("update.html")
 }
+
+//RenderGetOnes 获取某个人所有的文章
+func RenderGetOnes(ctx context.Context) {
+	ctx.View("myarticles.html")
+}

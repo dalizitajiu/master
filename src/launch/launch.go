@@ -29,9 +29,10 @@ func main() {
 	app.Get("/", route.RenderIndex)
 	app.Get("/view/article/{id:int}", route.RenderArticle)
 	app.Get("/view/login", route.RenderLogin)
-	app.Get("/test/articlelist", route.RenderSideBar)
-	app.Get("/article/new", route.RenderAddNewArticle)
-	app.Get("/article/update/{id:int}", route.RenderUpdate)
+	app.Get("/view/articlelist", route.RenderSideBar)
+	app.Get("/view/article/new", route.MiddleArticleNew, route.RenderAddNewArticle)
+	app.Get("/view/article/update/{id:int}", route.RenderUpdate)
+	app.Get("/view/article/getones", route.RenderGetOnes)
 
 	app.Get("/hello", route.Hello)
 	app.Post("/user/login", route.UserLogin)
@@ -42,6 +43,6 @@ func main() {
 	app.Post("/article/update", route.MiddleAuth, route.AriticleUpdate)
 	app.Get("/article/abstractlist", route.GetArticleList)
 	app.Get("/article/gettoken", route.MiddleAuth, route.GetArticleToken)
-
+	app.Get("/article/getones", route.MiddleAuth, route.GetArticlesByRid)
 	app.Run(iris.Addr(":8080"))
 }

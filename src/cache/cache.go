@@ -19,7 +19,7 @@ var stmtGetByAuthor *sql.Stmt
 var stmtGetArticle *sql.Stmt
 var stmtGetUserInfo *sql.Stmt
 var stmtGetSimpleArticleInfo *sql.Stmt
-var stmtGetArticlesByRid *sql.Stmt
+var stmtGetArticlesByAuthor *sql.Stmt
 
 var sqlInsert = "insert into article values(null,?,?,?,?)"
 var sqlGetByAuthor = "select * from article where author=?"
@@ -27,7 +27,7 @@ var sqlUpdateArticle = "update article set content=? where id=?"
 var sqlGetArticle = "select author,title,content,createtime from article where id=?"
 var sqlGetUserInfo = "select rid,nickname,email,phone,username from userinfo where rid=?"
 var sqlGetSimpleArticleInfo = "select id,author,title,createtime from article order by createtime desc limit ?,?"
-var sqlGetArticlesByRid = "select id,author,title,createtime form article where rid=? order by createtime"
+var sqlGetArticlesByAuthor = "select id,author,title,createtime from article where author=?"
 
 func init() {
 	log.Println("inti in cache.go")
@@ -44,7 +44,7 @@ func init() {
 	stmtGetArticle, _ = db.Prepare(sqlGetArticle)
 	stmtGetUserInfo, _ = db.Prepare(sqlGetUserInfo)
 	stmtGetSimpleArticleInfo, _ = db.Prepare(sqlGetSimpleArticleInfo)
-	stmtGetArticlesByRid, _ = db.Prepare(sqlGetArticlesByRid)
+	stmtGetArticlesByAuthor, _ = db.Prepare(sqlGetArticlesByAuthor)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -150,25 +150,40 @@ func RedGetNextRid(key string) (int64, error) {
 	return redisClient.Incr(key)
 }
 
-// GetArticlesByRid 根据rid获取对应的文章
-func GetArticlesByRid(rid string) []map[string]string {
-	res, err := stmtGetArticlesByRid.Query(rid)
+// DbGetArticlesByAuthor 根据rid获取对应的文章
+func DbGetArticlesByAuthor(author string) []map[string]string {
+
+	res, err := stmtGetArticlesByAuthor.Query(author)
+	log.Println("in first", author)
 	if err != nil {
+		log.Println("db错误", err)
 		return nil
 	}
 	re := make([]map[string]string, 0)
 	var id string
-	var author string
+	var nauthor string
 	var title string
 	var createtime string
 	for res.Next() {
-		res.Scan(&id, &author, &title, &createtime)
+		err1 := res.Scan(&id, &nauthor, &title, &createtime)
+		if err1 != nil {
+			panic("res.scan错误")
+		}
+		log.Println(id, nauthor, title, createtime)
 		temp := make(map[string]string)
 		temp["id"] = id
-		temp["author"] = author
+		temp["author"] = nauthor
 		temp["title"] = title
 		temp["createtime"] = createtime
 		re = append(re, temp)
 	}
+	log.Println("in dbgetarticlesbyauthor", re)
 	return re
+}
+
+//DbGetAuthorByRid 根据rid获取作者名称
+func DbGetAuthorByRid(rid string) string {
+	_, _, _, _, author := DbGetUserinfoByRid(rid)
+	log.Println("作者是", author)
+	return author
 }

@@ -220,6 +220,32 @@ func MiddleAuth(ctx context.Context) {
 	ctx.Next()
 }
 
+//MiddleArticleNew 创建新文章中间件
+func MiddleArticleNew(ctx context.Context) {
+	referer := ctx.GetHeader("Referer")
+	log.Println(referer)
+	rid := ctx.GetCookie("I")
+	rtime := ctx.GetCookie("r_time")
+	rtoken := ctx.GetCookie("r_token")
+
+	if rid == "" || rtime == "" || rtoken == "" {
+		ctx.Redirect("/view/login")
+		return
+	}
+	t1, _ := strconv.Atoi(lib.GetNow())
+	t2, _ := strconv.Atoi(rtime)
+	if (t1 - t2) > 86400 {
+		ctx.Redirect("/view/login")
+		return
+	}
+	if !lib.Auth1(rid, rtime, rtoken) {
+		ctx.Redirect("/view/login")
+		return
+	}
+	log.Println("RUC校验成功")
+	ctx.Next()
+}
+
 //AriticleUpdate 文章更新
 func AriticleUpdate(ctx context.Context) {
 	rtime := ctx.GetCookie("r_time")
@@ -291,5 +317,19 @@ func GetArticleToken(ctx context.Context) {
 		return
 	}
 	ctx.JSON(NewRes(0, "", lib.GenArticleToken(rid, articleid)))
+	return
+}
+
+//GetArticlesByRid 获取rid 对应的文章
+func GetArticlesByRid(ctx context.Context) {
+	rid := ctx.GetCookie("I")
+	log.Println("rid=", rid)
+	res := lib.GetArticlesByRid(rid)
+	if res == nil {
+		ctx.JSON(NewRes(0, "", make([]map[string]string, 0)))
+		return
+	}
+	ctx.JSON(NewRes(0, "", res))
+	// return
 	return
 }

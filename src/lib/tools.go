@@ -198,3 +198,10 @@ func TimeStampToUTC(timestamp string) string {
 	t, _ := strconv.ParseInt(timestamp, 10, 64)
 	return time.Unix(t, 0).Format("2006-01-02 15:04:05")
 }
+
+//GetArticlesByRid 获取某个rid的文章简要信息
+func GetArticlesByRid(rid string) []map[string]string {
+	author := cache.DbGetAuthorByRid(rid)
+	log.Println("in tools", author)
+	return cache.DbGetArticlesByAuthor(author)
+}

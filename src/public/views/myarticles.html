@@ -1,0 +1,19 @@
+<html>
+    <head>
+        <script src="/assert/javascript/vue.js"></script>
+        <script src="/assert/javascript/axios.min.js"></script>
+        <script src="/assert/javascript/user_articles.js"></script>
+    </head>
+    <body>
+        <div id="myarticles">
+            <my-articles></my-articles>
+        </div>
+        <script>
+            var myarticles=(new Vue({
+                el:"#myarticles"
+            })).$children[0];
+            myarticles.getSimpleData()
+        </script>
+        
+    </body>
+</html>
