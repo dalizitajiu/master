@@ -104,6 +104,11 @@ func GetNow() string {
 	return strconv.Itoa(int(time.Now().Unix()))
 }
 
+//GetNowInt 获取当前的时间戳
+func GetNowInt() int {
+	return int(time.Now().Unix())
+}
+
 //GetNowNano 获取当前的时间戳,纳秒级
 func GetNowNano() string {
 	return strconv.Itoa(int(time.Now().UnixNano()))
