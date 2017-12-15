@@ -26,18 +26,3 @@ func (cache *Cache) Set(key string, expire int, value []byte) error {
 	}
 	return err
 }
-
-//Get 获取缓存
-func (cache *Cache) Get(key string) []byte {
-	infolist, err := ioutil.ReadDir(cache.BasePath + APP + "\\" + key)
-	if err != nil {
-		fmt.Println(err)
-		return nil
-	}
-	name := infolist[0].Name()
-	expiretime, err := strconv.Atoi(name)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-}
