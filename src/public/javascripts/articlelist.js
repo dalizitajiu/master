@@ -1,13 +1,13 @@
 Vue.component('article-list', {
-  template: `<div><h3 v-bind:style="caption_style">最近的文章</h3>
-              <ol v-bind:style="">
+  template: `<div style="outer_style"><h3 v-bind:style="caption_style">最近的文章</h3>
+              <ul v-bind:style="ul_style">
                 <li v-for="item in articlelists">
-                  <a v-bind:style="link_style" v-bind:href="prefix_article+item.id">{{item.title}}--{{item.author}}</a>
+                  <a v-bind:style="link_style" v-bind:href="prefix_article+item.id"><span v-bind:style="span_title_style">{{item.title}}</span><span v-bind:style="span_author_style">{{item.author}}</span></a>
                 </li>
-              </ol>
+              </ul>
               <div v-bind:style="buttonbox_style">
-                <button v-on:click="descPage">上翻页</button>
-                <button v-on:click="ascPage">下翻页</button>
+                <button ref="btn_pre" v-on:click="descPage">上翻页</button>
+                <button ref="btn_next" v-on:click="ascPage">下翻页</button>
               </div>
               </div>`,
   data: function () {
@@ -21,26 +21,37 @@ Vue.component('article-list', {
       caption_style:{
         "text-align":"center"
       },
+      ul_style:{
+        "list-style-type":"square"
+      },
       buttonbox_style:{
         "width":"100%",
         "text-align":"center"
+      },
+      outer_style:{
+        "width":"120px"
+      },
+      span_title_style:{
+        "font-size":"larger"
+      },
+      span_author_style:{
+        "font-style":"italic",
+        "margin-left":"10px",
+        "font-size":"14px"
       }
     }
   },
-  created: function () {
-    let re = [];
-    re.push({
-      title: "sfsfsdf",
-      author: "lixiaomeng",
-      link: "https://www.baidu.com"
-    });
-    re.push({
-      title: "sdfsdfs",
-      author: "liuyingmei",
-      link: "http://www.baidu.com"
-    });
-    console.log(this.data)
-    this.articlelists = re;
+  mounted: function () {
+    console.log("mounted")
+    this.$refs.btn_pre.disabled = true;
+    this.getSimpleData();
+  },
+  watch:{
+    currentpage:function(val,oldVal){
+      if(val==0){
+        this.$refs.btn_pre.disabled=true;
+      }
+    }
   },
   methods: {
     getSimpleData: function (pageno=0) {
@@ -58,6 +69,7 @@ Vue.component('article-list', {
     },
     
     descPage:function(){
+
       this.currentpage=this.currentpage-1;
       if(this.currentpage<0){
         this.currentpage=0;
@@ -67,7 +79,8 @@ Vue.component('article-list', {
     },
     ascPage:function(){
       this.currentpage=this.currentpage+1;
-      if(this.articlelists.length<1){
+      if(this.articlelists.length<10){
+        this.$refs.btn_next.disabled=true;
         return
       }
       this.getSimpleData(this.currentpage)

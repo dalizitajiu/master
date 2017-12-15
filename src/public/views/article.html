@@ -4,6 +4,7 @@
     <script src="/assert/javascript/vue.js"></script>
     <script src="/assert/javascript/axios.min.js"></script>
     <script src="/assert/javascript/articlelist.js"></script>
+    <script src="/assert/javascript/article.js"></script>
     <link rel="stylesheet" type="text/css" href="/assert/style/article.css" />
 </head>
 
@@ -15,18 +16,13 @@
         var obj_article_list=(new Vue({
             el:"#sidebar"
         })).$children[0];
-        obj_article_list.getSimpleData();
     </script>
-    <div class="article_box">
-        <h1 class="title">{{.title}}</h1>
-        <h3 class="subtitle">{{.subtitle}}</h3>
-        <h5 class="author">{{.author}}--in--{{.createtime}}</h5>
-        <div id="content" class="content">{{.content}}</div>
-        <script>
-            obj_content = document.getElementById("content")
-            obj_content.innerHTML = obj_content.innerHTML.replace(/(\&|\&)gt;/g, ">").replace(/(\&|\&)lt;/g, "<").replace(/(\&|\&)quot;/g, "\"");
-        </script>
+    <div id="article">
+        <article></article>
     </div>
+    <script>
+        var article = (new Vue({ el: "#articles" })).$children[0];
+    </script>
 </body>
 
 </html>

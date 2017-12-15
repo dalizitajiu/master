@@ -71,6 +71,7 @@ func RedSetPwdRid(key string, fld1 string, val1 string, fld2 string, val2 string
 
 //DbAddNewArticle mysql增加新纹章
 func DbAddNewArticle(author string, title string, content string, createtime string) (int, error) {
+	log.Println("[DbAddNewArticle]")
 	res, err := stmtInsert.Exec(author, title, content, createtime)
 	if err != nil {
 		log.Println("mysql 错误")
@@ -82,6 +83,7 @@ func DbAddNewArticle(author string, title string, content string, createtime str
 
 //DbUpdateArticle mysql更新文章
 func DbUpdateArticle(articleid int, content string) error {
+	log.Println("[DbUpdateArticle]")
 	_, err := stmtUpdate.Exec(content, articleid)
 	if err != nil {
 		log.Println("mysql 错误")
@@ -91,6 +93,7 @@ func DbUpdateArticle(articleid int, content string) error {
 
 //DbGetArticleContent mysql获取文章内容
 func DbGetArticleContent(articleid int) (string, string, string, string, error) {
+	log.Println("[DbGetArticleContent]")
 	res := stmtGetArticle.QueryRow(articleid)
 
 	var author string
@@ -98,6 +101,7 @@ func DbGetArticleContent(articleid int) (string, string, string, string, error) 
 	var content string
 	var createtime string
 	res.Scan(&author, &title, &content, &createtime)
+	log.Println(author, title, content, createtime)
 	log.Println(author, title, content, createtime)
 	return author, title, content, createtime, nil
 }
@@ -125,6 +129,7 @@ func DbGetSimpleArticleInfo(pageno int, pagenum int) []map[string]string {
 
 //DbGetUserinfoByRid msql通过rid获取用户信息
 func DbGetUserinfoByRid(rrid string) (string, string, string, string, string) {
+	log.Println("[DbGetUserinfoByRid]")
 	rows := stmtGetUserInfo.QueryRow(rrid)
 	var rid string
 	var nickname string
@@ -135,18 +140,18 @@ func DbGetUserinfoByRid(rrid string) (string, string, string, string, string) {
 	if err != nil {
 		return "", "", "", "", ""
 	}
-	log.Println("in dbgetuserinfobyrid")
 	return rid, username, email, phone, nickname
 }
 
 //RedCheckExistsEmail redis检测该邮箱有没有被使用
 func RedCheckExistsEmail(key string) (bool, error) {
-
+	log.Println("[RedCheckExistsEmail]")
 	return redisClient.Exists(key)
 }
 
 //RedGetNextRid redis获取下一个rid
 func RedGetNextRid(key string) (int64, error) {
+	log.Println("[RedGetNextRid]")
 	return redisClient.Incr(key)
 }
 
@@ -183,6 +188,7 @@ func DbGetArticlesByAuthor(author string) []map[string]string {
 
 //DbGetAuthorByRid 根据rid获取作者名称
 func DbGetAuthorByRid(rid string) string {
+	log.Println("[DbGetAuthorByRid]")
 	_, _, _, _, author := DbGetUserinfoByRid(rid)
 	log.Println("作者是", author)
 	return author

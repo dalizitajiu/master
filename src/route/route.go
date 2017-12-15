@@ -235,10 +235,12 @@ func MiddleArticleNew(ctx context.Context) {
 	t1, _ := strconv.Atoi(lib.GetNow())
 	t2, _ := strconv.Atoi(rtime)
 	if (t1 - t2) > 86400 {
+		log.Println("token过期")
 		ctx.Redirect("/view/login")
 		return
 	}
 	if !lib.Auth1(rid, rtime, rtoken) {
+		log.Println("Auth校验失败")
 		ctx.Redirect("/view/login")
 		return
 	}
