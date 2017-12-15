@@ -1,20 +1,9 @@
 Vue.component('simple-login', {
-    // template: `<div>
-    //                 <form ref="loginform" action="/user/login" method="post" enctype="application/x-www-form-urlencoded" v-on:submit.prevent="checkForm">
-    //                 请输入邮箱:<br>
-    //                 <input v-model.trim="email" name="email"></input>
-    //                 <br>
-    //                 请输入密码:<br>
-    //                 <input v-model.trim="pwd" name="pwd" type="password"></input>
-    //                 <br>
-    //                 <input type="submit"></input>
-    //                 </form>
-    //             </div>`,
     template:`
         <div>
-            <input v-model.trim="email" name="email"></input>
+            <span stype="span_style">账户</span><input style="input_style" v-model.trim="email" name="email" autofocus></input>
             <br>
-            <input v-model.trim="pwd" name="pwd" type="password"></input>
+            <span stype="span_style">密码</span><input v-model.trim="pwd" name="pwd" type="password"></input>
             <br>
             <input type="button" v-on:click="login" value="登录"></input>
         </div>
@@ -22,7 +11,14 @@ Vue.component('simple-login', {
     data: function() {
         return {
             email: "",
-            pwd: ""
+            pwd: "",
+            input_style:{
+                "border-radius": "5px",
+            },
+            span_style:{
+                "margin-right":"10px",
+                "color":"#4CAF50"
+            }
         }
     },
     methods: {

@@ -27,13 +27,27 @@ Vue.component('article-list', {
       }
     }
   },
+  created: function () {
+    let re = [];
+    re.push({
+      title: "sfsfsdf",
+      author: "lixiaomeng",
+      link: "https://www.baidu.com"
+    });
+    re.push({
+      title: "sdfsdfs",
+      author: "liuyingmei",
+      link: "http://www.baidu.com"
+    });
+    console.log(this.data)
+    this.articlelists = re;
+  },
   methods: {
     getSimpleData: function (pageno=0) {
       let test = this;
       let url = `http://127.0.0.1:8080/article/abstractlist?pageno=${pageno}`;
       axios.get(url).then(function (response) {
         console.log((response.data)["data"])
-
         test.articlelists = (response.data)["data"];
       }).catch(function (err) {
         console.log(err)
@@ -42,21 +56,7 @@ Vue.component('article-list', {
     setRaw: function (data) {
       this.articlelists = data;
     },
-    init: function () {
-      let re = [];
-      re.push({
-        title: "sfsfsdf",
-        author: "lixiaomeng",
-        link: "https://www.baidu.com"
-      });
-      re.push({
-        title: "sdfsdfs",
-        author: "liuyingmei",
-        link: "http://www.baidu.com"
-      });
-      console.log(this.data)
-      this.articlelists = re;
-    },
+    
     descPage:function(){
       this.currentpage=this.currentpage-1;
       if(this.currentpage<0){
@@ -64,7 +64,6 @@ Vue.component('article-list', {
         return
       }
       this.getSimpleData(this.currentpage)
-
     },
     ascPage:function(){
       this.currentpage=this.currentpage+1;
