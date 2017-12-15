@@ -1,4 +1,4 @@
-Vue.component("article", {
+Vue.component("myarticle", {
     template: `<div v-bind:style="outer_style">
                     <h1 v-bind:style="title_style">{{title}}</h1>
                     <h3 v-bind:style="author_style">{{author}}</h3>
@@ -50,9 +50,9 @@ Vue.component("article", {
                 let res=response["data"]["data"]
                 self.author=res.author;
                 self.title=res.title;
-                self.content = this.unescapeString(res.content);
+                self.content = self.unescapeString(res.content);
                 self.createtime=res.createtime;
-                this.$refs.content.innerHTML=self.content;
+                self.$refs.content.innerHTML=self.content;
             })
         },
         unescapeString:function(raw){
