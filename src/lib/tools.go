@@ -210,3 +210,8 @@ func GetArticlesByRid(rid string) []map[string]string {
 	log.Println("in tools", author)
 	return cache.DbGetArticlesByAuthor(author)
 }
+
+//GetArticleByType 根据type获取列表
+func GetArticleByType(stype string) []map[string]string {
+	return cache.DbGetArticleByType(stype)
+}

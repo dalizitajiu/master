@@ -335,3 +335,10 @@ func GetArticlesByRid(ctx context.Context) {
 	// return
 	return
 }
+
+//GetArticleByType ..
+func GetArticleByType(ctx context.Context) {
+	mtype := ctx.FormValue("type")
+	res := lib.GetArticleByType(mtype)
+	ctx.JSON(NewRes(0, "", res))
+}

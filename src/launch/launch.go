@@ -44,5 +44,6 @@ func main() {
 	app.Get("/article/abstractlist", route.GetArticleList)
 	app.Get("/article/gettoken", route.MiddleAuth, route.GetArticleToken)
 	app.Get("/article/getones", route.MiddleAuth, route.GetArticlesByRid)
+	app.Get("/article/getbytype", route.GetArticleByType)
 	app.Run(iris.Addr(":8080"))
 }

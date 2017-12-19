@@ -20,6 +20,7 @@ var stmtGetArticle *sql.Stmt
 var stmtGetUserInfo *sql.Stmt
 var stmtGetSimpleArticleInfo *sql.Stmt
 var stmtGetArticlesByAuthor *sql.Stmt
+var stmtGetArticleByType *sql.Stmt
 
 var sqlInsert = "insert into article values(null,?,?,?,?)"
 var sqlGetByAuthor = "select * from article where author=?"
@@ -28,6 +29,7 @@ var sqlGetArticle = "select author,title,content,createtime from article where i
 var sqlGetUserInfo = "select rid,nickname,email,phone,username from userinfo where rid=?"
 var sqlGetSimpleArticleInfo = "select id,author,title,createtime from article order by createtime desc limit ?,?"
 var sqlGetArticlesByAuthor = "select id,author,title,createtime from article where author=?"
+var sqlGetArticleByType = "select id,title,type from article where type=?"
 
 func init() {
 	log.Println("inti in cache.go")
@@ -45,6 +47,7 @@ func init() {
 	stmtGetUserInfo, _ = db.Prepare(sqlGetUserInfo)
 	stmtGetSimpleArticleInfo, _ = db.Prepare(sqlGetSimpleArticleInfo)
 	stmtGetArticlesByAuthor, _ = db.Prepare(sqlGetArticlesByAuthor)
+	stmtGetArticleByType, _ = db.Prepare(sqlGetArticleByType)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -192,4 +195,30 @@ func DbGetAuthorByRid(rid string) string {
 	_, _, _, _, author := DbGetUserinfoByRid(rid)
 	log.Println("作者是", author)
 	return author
+}
+
+//DbGetArticleByType  根据类型获取文章列表
+func DbGetArticleByType(mtype string) []map[string]string {
+	res, err := stmtGetArticleByType.Query(mtype)
+	if err != nil {
+		log.Println("db错误", err)
+	}
+	re := make([]map[string]string, 0)
+	var id string
+	var title string
+	var utype string
+	for res.Next() {
+		err1 := res.Scan(&id, &title, &mtype)
+		if err1 != nil {
+			panic("res.scan错误")
+		}
+		log.Println(id, title, utype)
+		temp := make(map[string]string)
+		temp["id"] = id
+		temp["title"] = title
+		temp["type"] = utype
+		re = append(re, temp)
+	}
+	log.Println("lin dbgetarticlebytype", re)
+	return re
 }
