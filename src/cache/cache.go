@@ -48,6 +48,7 @@ func init() {
 	stmtGetSimpleArticleInfo, _ = db.Prepare(sqlGetSimpleArticleInfo)
 	stmtGetArticlesByAuthor, _ = db.Prepare(sqlGetArticlesByAuthor)
 	stmtGetArticleByType, _ = db.Prepare(sqlGetArticleByType)
+	log.Println("here")
 	if err != nil {
 		panic(err.Error())
 	}
