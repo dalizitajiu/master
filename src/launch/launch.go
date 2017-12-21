@@ -4,6 +4,8 @@ import (
 	"log"
 	"route"
 
+	_ "net/http/pprof"
+
 	"github.com/kataras/iris"
 	"github.com/kataras/iris/middleware/logger"
 	"github.com/kataras/iris/middleware/recover"
