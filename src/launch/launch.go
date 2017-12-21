@@ -22,11 +22,12 @@ func main() {
 
 	app.Use(customLogger)
 	log.Println("Start Service!")
-	app.RegisterView(iris.HTML("../public/views", ".html"))
-	app.StaticWeb("/assert/javascript", "../public/javascripts")
-	app.StaticWeb("/assert/style", "../public/styles")
+	// app.RegisterView(iris.HTML("../public/views", ".html"))
+	// app.RegisterView(iris.HTML("F://myvue/dist/", ".html"))
+	// app.StaticWeb("/assert/javascript", "../public/javascripts")
+	// app.StaticWeb("/assert/style", "../public/styles")
 
-	app.Get("/", route.RenderIndex)
+	// app.Get("/", route.RenderIndex)
 	app.Get("/view/article/{id:int}", route.RenderArticle)
 	app.Get("/view/login", route.RenderLogin)
 	app.Get("/view/articlelist", route.RenderSideBar)

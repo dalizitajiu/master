@@ -135,8 +135,8 @@ func SendEmail(to string, msg string) error {
 }
 
 //AddNewArticle 增加新文章
-func AddNewArticle(author string, title string, content string) (int, error) {
-	id, err := cache.DbAddNewArticle(author, title, content, GetNow())
+func AddNewArticle(author string, title string, content string, atype string) (int, error) {
+	id, err := cache.DbAddNewArticle(author, title, content, GetNow(), atype)
 	if err != nil {
 		log.Println("这里发生了错误")
 		return 0, err

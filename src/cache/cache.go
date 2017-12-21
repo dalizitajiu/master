@@ -22,7 +22,7 @@ var stmtGetSimpleArticleInfo *sql.Stmt
 var stmtGetArticlesByAuthor *sql.Stmt
 var stmtGetArticleByType *sql.Stmt
 
-var sqlInsert = "insert into article values(null,?,?,?,?)"
+var sqlInsert = "insert into article values(null,?,?,?,?,?)"
 var sqlGetByAuthor = "select * from article where author=?"
 var sqlUpdateArticle = "update article set content=? where id=?"
 var sqlGetArticle = "select author,title,content,createtime from article where id=?"
@@ -74,9 +74,9 @@ func RedSetPwdRid(key string, fld1 string, val1 string, fld2 string, val2 string
 }
 
 //DbAddNewArticle mysql增加新纹章
-func DbAddNewArticle(author string, title string, content string, createtime string) (int, error) {
+func DbAddNewArticle(author string, title string, content string, createtime string, atype string) (int, error) {
 	log.Println("[DbAddNewArticle]")
-	res, err := stmtInsert.Exec(author, title, content, createtime)
+	res, err := stmtInsert.Exec(author, title, content, createtime, atype)
 	if err != nil {
 		log.Println("mysql 错误")
 		return 0, err

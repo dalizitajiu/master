@@ -183,12 +183,13 @@ func ArticleAddNew(ctx context.Context) {
 	log.Println(ctx)
 	content := ctx.PostValue("r_content")
 	log.Println("昵称是", author, title, content)
-	if author == "" || title == "" || content == "" {
+	atype := ctx.PostValue("type")
+	if author == "" || title == "" || content == "" || atype == "" {
 		ctx.JSON(NewRes(1001, "参数错误", ""))
 		return
 	}
 
-	id, err := lib.AddNewArticle(author, title, content)
+	id, err := lib.AddNewArticle(author, title, content, atype)
 	if err != nil {
 		ctx.JSON(NewRes(1003, "此标题已经存在", ""))
 		return
