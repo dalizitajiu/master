@@ -23,7 +23,7 @@ func RenderSideBar(ctx context.Context) {
 func RenderArticle(ctx context.Context) {
 	id, _ := ctx.Params().GetInt("id")
 	log.Println("当前要浏览的文章id是", id)
-	author, title, content, createtime, _ := lib.GetArticleContent(id)
+	author, title, content, createtime, _, _ := lib.GetArticleContent(id)
 	if author == "" {
 		ctx.Redirect("/")
 	}

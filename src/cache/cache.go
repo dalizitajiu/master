@@ -25,7 +25,7 @@ var stmtGetArticleByType *sql.Stmt
 var sqlInsert = "insert into article values(null,?,?,?,?,?)"
 var sqlGetByAuthor = "select * from article where author=?"
 var sqlUpdateArticle = "update article set content=? where id=?"
-var sqlGetArticle = "select author,title,content,createtime from article where id=?"
+var sqlGetArticle = "select author,title,content,createtime,type from article where id=?"
 var sqlGetUserInfo = "select rid,nickname,email,phone,username from userinfo where rid=?"
 var sqlGetSimpleArticleInfo = "select id,author,title,createtime from article order by createtime desc limit ?,?"
 var sqlGetArticlesByAuthor = "select id,author,title,createtime from article where author=?"
@@ -96,7 +96,7 @@ func DbUpdateArticle(articleid int, content string) error {
 }
 
 //DbGetArticleContent mysql获取文章内容
-func DbGetArticleContent(articleid int) (string, string, string, string, error) {
+func DbGetArticleContent(articleid int) (string, string, string, string, string, error) {
 	log.Println("[DbGetArticleContent]")
 	res := stmtGetArticle.QueryRow(articleid)
 
@@ -104,10 +104,11 @@ func DbGetArticleContent(articleid int) (string, string, string, string, error) 
 	var title string
 	var content string
 	var createtime string
-	res.Scan(&author, &title, &content, &createtime)
-	log.Println(author, title, content, createtime)
-	log.Println(author, title, content, createtime)
-	return author, title, content, createtime, nil
+	var articletype string
+	res.Scan(&author, &title, &content, &createtime, &articletype)
+	log.Println(author, title, content, createtime, articletype)
+	// log.Println(author, title, content, createtime)
+	return author, title, content, createtime, articletype, nil
 }
 
 //DbGetSimpleArticleInfo mysql获取简单的文章信息

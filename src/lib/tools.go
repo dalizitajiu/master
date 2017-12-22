@@ -158,7 +158,7 @@ func UpdateArticle(articleid int, content string) error {
 }
 
 //GetArticleContent 获取文章内容
-func GetArticleContent(articleid int) (string, string, string, string, error) {
+func GetArticleContent(articleid int) (string, string, string, string, string, error) {
 	return cache.DbGetArticleContent(articleid)
 }
 
