@@ -20,14 +20,16 @@ var stmtGetArticle *sql.Stmt
 var stmtGetUserInfo *sql.Stmt
 var stmtGetSimpleArticleInfo *sql.Stmt
 var stmtGetArticlesByAuthor *sql.Stmt
+var stmtGetArticleByType *sql.Stmt
 
-var sqlInsert = "insert into article values(null,?,?,?,?)"
+var sqlInsert = "insert into article values(null,?,?,?,?,?)"
 var sqlGetByAuthor = "select * from article where author=?"
 var sqlUpdateArticle = "update article set content=? where id=?"
-var sqlGetArticle = "select author,title,content,createtime from article where id=?"
+var sqlGetArticle = "select author,title,content,createtime,type from article where id=?"
 var sqlGetUserInfo = "select rid,nickname,email,phone,username from userinfo where rid=?"
 var sqlGetSimpleArticleInfo = "select id,author,title,createtime from article order by createtime desc limit ?,?"
 var sqlGetArticlesByAuthor = "select id,author,title,createtime from article where author=?"
+var sqlGetArticleByType = "select id,title,type from article where type=?"
 
 func init() {
 	log.Println("inti in cache.go")
@@ -45,6 +47,8 @@ func init() {
 	stmtGetUserInfo, _ = db.Prepare(sqlGetUserInfo)
 	stmtGetSimpleArticleInfo, _ = db.Prepare(sqlGetSimpleArticleInfo)
 	stmtGetArticlesByAuthor, _ = db.Prepare(sqlGetArticlesByAuthor)
+	stmtGetArticleByType, _ = db.Prepare(sqlGetArticleByType)
+	log.Println("here")
 	if err != nil {
 		panic(err.Error())
 	}
@@ -70,9 +74,9 @@ func RedSetPwdRid(key string, fld1 string, val1 string, fld2 string, val2 string
 }
 
 //DbAddNewArticle mysql增加新纹章
-func DbAddNewArticle(author string, title string, content string, createtime string) (int, error) {
+func DbAddNewArticle(author string, title string, content string, createtime string, atype string) (int, error) {
 	log.Println("[DbAddNewArticle]")
-	res, err := stmtInsert.Exec(author, title, content, createtime)
+	res, err := stmtInsert.Exec(author, title, content, createtime, atype)
 	if err != nil {
 		log.Println("mysql 错误")
 		return 0, err
@@ -92,7 +96,7 @@ func DbUpdateArticle(articleid int, content string) error {
 }
 
 //DbGetArticleContent mysql获取文章内容
-func DbGetArticleContent(articleid int) (string, string, string, string, error) {
+func DbGetArticleContent(articleid int) (string, string, string, string, string, error) {
 	log.Println("[DbGetArticleContent]")
 	res := stmtGetArticle.QueryRow(articleid)
 
@@ -100,10 +104,11 @@ func DbGetArticleContent(articleid int) (string, string, string, string, error) 
 	var title string
 	var content string
 	var createtime string
-	res.Scan(&author, &title, &content, &createtime)
-	log.Println(author, title, content, createtime)
-	log.Println(author, title, content, createtime)
-	return author, title, content, createtime, nil
+	var articletype string
+	res.Scan(&author, &title, &content, &createtime, &articletype)
+	log.Println(author, title, content, createtime, articletype)
+	// log.Println(author, title, content, createtime)
+	return author, title, content, createtime, articletype, nil
 }
 
 //DbGetSimpleArticleInfo mysql获取简单的文章信息
@@ -192,4 +197,30 @@ func DbGetAuthorByRid(rid string) string {
 	_, _, _, _, author := DbGetUserinfoByRid(rid)
 	log.Println("作者是", author)
 	return author
+}
+
+//DbGetArticleByType  根据类型获取文章列表
+func DbGetArticleByType(mtype string) []map[string]string {
+	res, err := stmtGetArticleByType.Query(mtype)
+	if err != nil {
+		log.Println("db错误", err)
+	}
+	re := make([]map[string]string, 0)
+	var id string
+	var title string
+	var utype string
+	for res.Next() {
+		err1 := res.Scan(&id, &title, &mtype)
+		if err1 != nil {
+			panic("res.scan错误")
+		}
+		log.Println(id, title, utype)
+		temp := make(map[string]string)
+		temp["id"] = id
+		temp["title"] = title
+		temp["type"] = utype
+		re = append(re, temp)
+	}
+	log.Println("lin dbgetarticlebytype", re)
+	return re
 }

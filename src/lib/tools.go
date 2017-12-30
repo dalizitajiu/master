@@ -135,8 +135,8 @@ func SendEmail(to string, msg string) error {
 }
 
 //AddNewArticle 增加新文章
-func AddNewArticle(author string, title string, content string) (int, error) {
-	id, err := cache.DbAddNewArticle(author, title, content, GetNow())
+func AddNewArticle(author string, title string, content string, atype string) (int, error) {
+	id, err := cache.DbAddNewArticle(author, title, content, GetNow(), atype)
 	if err != nil {
 		log.Println("这里发生了错误")
 		return 0, err
@@ -158,7 +158,7 @@ func UpdateArticle(articleid int, content string) error {
 }
 
 //GetArticleContent 获取文章内容
-func GetArticleContent(articleid int) (string, string, string, string, error) {
+func GetArticleContent(articleid int) (string, string, string, string, string, error) {
 	return cache.DbGetArticleContent(articleid)
 }
 
@@ -209,4 +209,9 @@ func GetArticlesByRid(rid string) []map[string]string {
 	author := cache.DbGetAuthorByRid(rid)
 	log.Println("in tools", author)
 	return cache.DbGetArticlesByAuthor(author)
+}
+
+//GetArticleByType 根据type获取列表
+func GetArticleByType(stype string) []map[string]string {
+	return cache.DbGetArticleByType(stype)
 }

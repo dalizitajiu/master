@@ -32,6 +32,7 @@ type ArticleInfo struct {
 	Title      string `json:"title"`
 	Content    string `json:"content"`
 	CreateTime string `json:"createtime"`
+	Type       string `json:"type"`
 }
 
 //AbstractInfo 摘要信息
@@ -54,8 +55,8 @@ func NewUserInfo(rid string, email string, nickname string, phone string, userna
 }
 
 //NewAritcleInfo 新的文章信息
-func NewAritcleInfo(author string, title string, content string, createtime string) ArticleInfo {
-	return ArticleInfo{author, title, content, createtime}
+func NewAritcleInfo(author string, title string, content string, createtime string, articletype string) ArticleInfo {
+	return ArticleInfo{author, title, content, createtime, articletype}
 }
 
 //Hello 测试用
@@ -183,12 +184,13 @@ func ArticleAddNew(ctx context.Context) {
 	log.Println(ctx)
 	content := ctx.PostValue("r_content")
 	log.Println("昵称是", author, title, content)
-	if author == "" || title == "" || content == "" {
+	atype := ctx.PostValue("type")
+	if author == "" || title == "" || content == "" || atype == "" {
 		ctx.JSON(NewRes(1001, "参数错误", ""))
 		return
 	}
 
-	id, err := lib.AddNewArticle(author, title, content)
+	id, err := lib.AddNewArticle(author, title, content, atype)
 	if err != nil {
 		ctx.JSON(NewRes(1003, "此标题已经存在", ""))
 		return
@@ -203,7 +205,7 @@ func MiddleAuth(ctx context.Context) {
 	rtoken := ctx.GetCookie("r_token")
 
 	if rid == "" || rtime == "" || rtoken == "" {
-		ctx.JSON(NewRes(1001, "参数错误", ""))
+		ctx.JSON(NewRes(200, "未登陆", ""))
 		return
 	}
 	t1, _ := strconv.Atoi(lib.GetNow())
@@ -286,13 +288,13 @@ func GetArticle(ctx context.Context) {
 		ctx.JSON(NewRes(1001, "不存在该页面", ""))
 		return
 	}
-	author, title, content, createtime, err := lib.GetArticleContent(articleid)
+	author, title, content, createtime, articletype, err := lib.GetArticleContent(articleid)
 
 	if err != nil {
 		ctx.JSON(NewRes(1002, "内部错误", ""))
 		return
 	}
-	ctx.JSON(NewRes(0, "", NewAritcleInfo(author, title, content, lib.TimeStampToUTC(createtime))))
+	ctx.JSON(NewRes(0, "", NewAritcleInfo(author, title, content, lib.TimeStampToUTC(createtime), articletype)))
 	return
 }
 
@@ -334,4 +336,11 @@ func GetArticlesByRid(ctx context.Context) {
 	ctx.JSON(NewRes(0, "", res))
 	// return
 	return
+}
+
+//GetArticleByType ..
+func GetArticleByType(ctx context.Context) {
+	mtype := ctx.FormValue("type")
+	res := lib.GetArticleByType(mtype)
+	ctx.JSON(NewRes(0, "", res))
 }
