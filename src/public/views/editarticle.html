@@ -34,8 +34,10 @@
             let param = new URLSearchParams()
             param.append("r_title", obj_title.value)
             param.append("r_content", content)
+            param.append("type","html")
             axios.post("http://127.0.0.1:8080/article/addnew", param).then(function (response) {
                 // if(response.body)
+                console.log("res",response.data)
                 if(response.data.errno!=0){
                     window.location.href="/view/login"
                 }else{

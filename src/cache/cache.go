@@ -22,14 +22,14 @@ var stmtGetSimpleArticleInfo *sql.Stmt
 var stmtGetArticlesByAuthor *sql.Stmt
 var stmtGetArticleByType *sql.Stmt
 
-var sqlInsert = "insert into article values(null,?,?,?,?,?)"
-var sqlGetByAuthor = "select * from article where author=?"
-var sqlUpdateArticle = "update article set content=? where id=?"
-var sqlGetArticle = "select author,title,content,createtime,type from article where id=?"
-var sqlGetUserInfo = "select rid,nickname,email,phone,username from userinfo where rid=?"
-var sqlGetSimpleArticleInfo = "select id,author,title,createtime from article order by createtime desc limit ?,?"
-var sqlGetArticlesByAuthor = "select id,author,title,createtime from article where author=?"
-var sqlGetArticleByType = "select id,title,type from article where type=?"
+var sqlInsert = "insert into articles values(null,?,?,?,?,?)"
+var sqlGetByAuthor = "select * from articles where author=?"
+var sqlUpdateArticle = "update articles set content=? where id=?"
+var sqlGetArticle = "select author,title,content,createtime,type from articles where id=?"
+var sqlGetUserInfo = "select rid,nickname,email,phone,username from user_infos where rid=?"
+var sqlGetSimpleArticleInfo = "select id,author,title,createtime from articles order by createtime desc limit ?,?"
+var sqlGetArticlesByAuthor = "select id,author,title,createtime from articles where author=?"
+var sqlGetArticleByType = "select id,title,type from articles where type=?"
 
 func init() {
 	log.Println("inti in cache.go")
@@ -40,7 +40,7 @@ func init() {
 	}
 	//	redisClient.Auth()
 	db, err = sql.Open("mysql", "dev:dalizi1992@tcp(127.0.0.1:3306)/jack")
-	db.SetMaxOpenConns(20)
+	db.SetMaxOpenConns(50)
 	stmtInsert, _ = db.Prepare(sqlInsert)
 	stmtUpdate, _ = db.Prepare(sqlUpdateArticle)
 	stmtGetArticle, _ = db.Prepare(sqlGetArticle)
